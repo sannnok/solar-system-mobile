@@ -9,7 +9,7 @@ No build step, no bundler, no network calls. Open it and it runs.
 ## Running it
 
 ```bash
-npm start          # http://127.0.0.1:5173
+npm start          # http://localhost:5173
 ```
 
 Any static file server works just as well — it is plain ES modules:
@@ -17,6 +17,60 @@ Any static file server works just as well — it is plain ES modules:
 ```bash
 python3 -m http.server 5173
 ```
+
+## Testing it on a phone
+
+There is no app to build and no Expo involved — this is a web page, so a phone
+only needs to reach a URL.
+
+**Same Wi-Fi, over your network.** The quickest way:
+
+```bash
+npm run mobile
+```
+
+That binds every interface and prints your machine's network address along with
+a QR code. Point the phone's camera at it. The QR encoder lives in
+`scripts/qr.mjs` and pulls in no dependencies.
+
+```
+  local    http://localhost:5173
+  network  http://192.168.1.104:5173
+
+  Scan with a phone on the same Wi-Fi:
+
+  █▀▀▀▀▀█ ▀▄█▀▄ █▀▀▀▀▀█
+  █ ███ █ █▄ ▄▀ █ ███ █
+  █ ▀▀▀ █ ▀█▄▀▄ █ ▀▀▀ █
+  ▀▀▀▀▀▀▀ ▀ █ ▀ ▀▀▀▀▀▀▀
+  ...
+```
+
+Note that this puts the server on your local network for as long as it runs.
+It only serves this directory, and refuses dotfiles so `.git` never leaks, but
+plain `npm start` stays on loopback so you opt into that deliberately.
+
+**No machine at all: GitHub Pages.** There is no build step, so the repository
+can be served exactly as it sits. In *Settings → Pages*, choose "Deploy from a
+branch" and pick this branch with folder `/ (root)`. The app uses only relative
+paths, so it works from a project subpath such as
+`https://<user>.github.io/solar-system-mobile/` without any configuration. This
+is also the easiest way to get it onto a phone that is not on your Wi-Fi, or to
+send someone a link.
+
+**A tunnel,** if you want a public HTTPS URL without deploying — run the server,
+then point `cloudflared tunnel --url http://localhost:5173` or `ngrok http 5173`
+at it and open the address it gives you.
+
+**Real debugging on the device.** Android: `chrome://inspect` on the desktop with
+the phone on USB. iOS: enable *Settings → Safari → Advanced → Web Inspector*,
+then find the tab under Safari's Develop menu on a Mac. Chrome DevTools device
+emulation is useful for layout, but it will not tell you anything real about
+GPU performance.
+
+The app itself needs no HTTPS — there is no camera, geolocation or service
+worker — so a plain `http://` LAN address is fine. It does use import maps, so
+it wants iOS 16.4+, Chrome 89+ or Firefox 108+.
 
 ## What you can do
 
@@ -88,7 +142,9 @@ src/
   ui/                 controls.js · infoPanel.js · labels.js · picker.js
   util/               math.js · time.js
 vendor/three/         three.js r180 (MIT), vendored so there is no CDN dependency
-scripts/dev-server.mjs
+scripts/
+  dev-server.mjs      static server; `--host` exposes it and prints a QR
+  qr.mjs              dependency-free QR encoder for that QR
 ```
 
 ## Notes

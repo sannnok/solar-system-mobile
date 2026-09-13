@@ -6,8 +6,15 @@
   "type": "module",
   "scripts": {
     "start": "node scripts/dev-server.mjs",
-    "dev": "node scripts/dev-server.mjs"
+    "dev": "node scripts/dev-server.mjs",
+    "mobile": "node scripts/dev-server.mjs --host"
   },
-  "keywords": ["three.js", "solar-system", "orrery", "webgl", "visualization"],
+  "keywords": [
+    "three.js",
+    "solar-system",
+    "orrery",
+    "webgl",
+    "visualization"
+  ],
   "license": "MIT"
 }
