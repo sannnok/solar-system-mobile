@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <meta
+      name="description"
+      content="An interactive 3D solar system: real orbital mechanics, adjustable time, orbital trails and click-to-focus planets."
+    />
+    <meta name="theme-color" content="#04060f" />
+    <title>Orrery — an interactive 3D solar system</title>
+    <link rel="stylesheet" href="./styles/main.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='5' fill='%23ffb545'/%3E%3Cellipse cx='16' cy='16' rx='14' ry='6' fill='none' stroke='%235f7bd8' stroke-width='1.5'/%3E%3Ccircle cx='30' cy='16' r='2' fill='%234d8fd6'/%3E%3C/svg%3E"
+    />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./vendor/three/three.module.min.js",
+          "three/addons/": "./vendor/three/addons/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="scene" aria-label="Three-dimensional view of the solar system"></canvas>
+      <div id="labels" class="labels-layer" aria-hidden="true"></div>
+
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand__mark" aria-hidden="true"></span>
+          <span class="brand__name">Orrery</span>
+        </div>
+        <div class="clock" aria-live="off">
+          <span class="clock__date" id="clock-date">—</span>
+          <span class="clock__time" id="clock-time">—</span>
+        </div>
+      </header>
+
+      <main class="stage">
+        <section
+          class="info"
+          id="info-panel"
+          aria-labelledby="info-name"
+          aria-live="polite"
+          hidden
+        >
+          <button class="info__close" id="info-close" type="button" aria-label="Close panel">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" /></svg>
+          </button>
+          <p class="info__type" id="info-type"></p>
+          <h2 class="info__name" id="info-name"></h2>
+          <p class="info__blurb" id="info-blurb"></p>
+          <dl class="info__facts" id="info-facts"></dl>
+          <p class="info__live" id="info-live"></p>
+        </section>
+
+        <p class="hint" id="hint">Tap a planet to follow it</p>
+      </main>
+
+      <footer class="dock">
+        <div class="chips" id="chips" role="group" aria-label="Jump to a body"></div>
+
+        <div class="controls">
+          <button
+            class="btn btn--play"
+            id="play"
+            type="button"
+            aria-label="Pause simulation"
+            aria-pressed="false"
+          >
+            <svg class="icon icon--pause" viewBox="0 0 20 20" aria-hidden="true">
+              <rect x="5" y="4" width="3.6" height="12" rx="1.1" />
+              <rect x="11.4" y="4" width="3.6" height="12" rx="1.1" />
+            </svg>
+            <svg class="icon icon--play" viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M6.5 4.2 15.4 10l-8.9 5.8z" />
+            </svg>
+          </button>
+
+          <label class="speed" for="speed">
+            <span class="speed__label">Speed</span>
+            <input
+              class="speed__slider"
+              id="speed"
+              type="range"
+              min="0"
+              max="1000"
+              step="1"
+              value="0"
+              aria-label="Simulation speed"
+            />
+            <output class="speed__value" id="speed-value" for="speed">—</output>
+          </label>
+
+          <div class="toggles">
+            <button class="btn btn--toggle" id="toggle-labels" type="button" aria-pressed="true">
+              Labels
+            </button>
+            <button class="btn btn--toggle" id="toggle-orbits" type="button" aria-pressed="true">
+              Orbits
+            </button>
+            <button class="btn btn--toggle" id="toggle-trails" type="button" aria-pressed="true">
+              Trails
+            </button>
+            <button class="btn" id="now" type="button" title="Jump to the present">Now</button>
+            <button class="btn" id="reset-view" type="button" title="Back to the full system">
+              Reset
+            </button>
+          </div>
+        </div>
+      </footer>
+
+      <div class="loader" id="loader">
+        <div class="loader__orbit" aria-hidden="true"><span></span></div>
+        <p class="loader__text">Charting orbits…</p>
+        <div class="loader__bar"><span id="loader-fill"></span></div>
+      </div>
+
+      <noscript>
+        <p class="noscript">This orrery needs JavaScript and WebGL to run.</p>
+      </noscript>
+    </div>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

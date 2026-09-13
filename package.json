@@ -1,0 +1,13 @@
+{
+  "name": "solar-system-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "An interactive 3D solar system with real orbital mechanics, adjustable time, orbital trails and click-to-focus planets.",
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/dev-server.mjs",
+    "dev": "node scripts/dev-server.mjs"
+  },
+  "keywords": ["three.js", "solar-system", "orrery", "webgl", "visualization"],
+  "license": "MIT"
+}
