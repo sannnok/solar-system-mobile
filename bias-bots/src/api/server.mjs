@@ -56,6 +56,7 @@ export function createApi({ store, apiKey = process.env.API_KEY || '', botUserna
     ['GET', /^\/api\/stats$/, () => json({
       bias: store.stats('bias'),
       health: store.stats('health'),
+      revenue: store.revenue('health'),
       videos_published: store.videosDone().size,
       videos_left: biases.length - store.videosDone().size,
     })],

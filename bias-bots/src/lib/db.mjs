@@ -27,6 +27,13 @@ export function openDb(file = process.env.DB_PATH ?? 'state/bots.db') {
     CREATE INDEX IF NOT EXISTS events_type ON events (bot, type, ts);
     CREATE TABLE IF NOT EXISTS file_cache (key TEXT PRIMARY KEY, file_id TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT);
+    CREATE TABLE IF NOT EXISTS purchases (
+      charge_id TEXT PRIMARY KEY,          -- telegram_payment_charge_id (нужен для возврата)
+      bot TEXT NOT NULL, user_id INTEGER NOT NULL, product TEXT NOT NULL,
+      currency TEXT NOT NULL, amount INTEGER NOT NULL,
+      ts INTEGER NOT NULL, refunded_at INTEGER
+    );
+    CREATE INDEX IF NOT EXISTS purchases_user ON purchases (bot, user_id, product);
     CREATE TABLE IF NOT EXISTS videos (
       bias_id TEXT PRIMARY KEY, status TEXT NOT NULL, url TEXT, meta TEXT, ts INTEGER NOT NULL
     );
@@ -99,6 +106,26 @@ export class Store {
   setVideo(biasId, status, url = null, meta = null) {
     this.db.prepare('INSERT OR REPLACE INTO videos (bias_id, status, url, meta, ts) VALUES (?, ?, ?, ?, ?)')
       .run(biasId, status, url, meta == null ? null : JSON.stringify(meta), Date.now());
+  }
+
+  addPurchase({ bot, userId, product, currency, amount, chargeId }) {
+    this.db.prepare(`INSERT OR IGNORE INTO purchases (charge_id, bot, user_id, product, currency, amount, ts)
+      VALUES (?, ?, ?, ?, ?, ?, ?)`).run(chargeId, bot, userId, product, currency, amount, Date.now());
+    this.log(bot, userId, 'purchase', `${product}:${amount}${currency}`);
+  }
+
+  activePurchase(bot, userId, product) {
+    return this.db.prepare(`SELECT * FROM purchases WHERE bot = ? AND user_id = ? AND product = ? AND refunded_at IS NULL
+      ORDER BY ts DESC LIMIT 1`).get(bot, userId, product) ?? null;
+  }
+
+  markRefunded(chargeId) {
+    this.db.prepare('UPDATE purchases SET refunded_at = ? WHERE charge_id = ?').run(Date.now(), chargeId);
+  }
+
+  revenue(bot) {
+    return this.db.prepare(`SELECT product, currency, COUNT(*) AS purchases, SUM(amount) AS amount FROM purchases
+      WHERE bot = ? AND refunded_at IS NULL GROUP BY product, currency`).all(bot).map((r) => ({ ...r }));
   }
 
   stats(bot) {

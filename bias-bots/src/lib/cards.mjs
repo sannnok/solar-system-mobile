@@ -220,6 +220,38 @@ export async function renderTipCard(tip, topic, bias, opts = {}) {
   return toPng(tipTree(tip, topic, bias, opts), SIZES[opts.format ?? 'post']);
 }
 
+// Карточка факта рубрики «Доказано наукой»: утверждение, что сделали и нашли,
+// вывод и источник (журнал, год, PMID) — чтобы картинка сама по себе была проверяемой.
+const SCIENCE = '#38bdf8';
+function factTree(fact, bias, { handle = '', topicTitle = '' } = {}) {
+  const [W, H] = SIZES.post;
+  const pad = 72;
+  const q = { accent: SCIENCE, title_ru: 'Двойное слепое РКИ' };
+  const src = fact.source;
+  return h('div', { width: W, height: H, position: 'relative', fontFamily: BODY_FONT, color: INK },
+    h('div', background(SCIENCE, W, H)),
+    h('div', { position: 'absolute', left: pad, top: pad, width: W - 2 * pad, height: H - 2 * pad, flexDirection: 'column', gap: 24 },
+      h('div', { justifyContent: 'space-between', alignItems: 'center' },
+        pill(q),
+        text({ fontSize: 24, fontWeight: 700, color: MUTED }, [topicTitle, src.year].filter(Boolean).join(' · '))),
+      text({ fontFamily: TITLE_FONT, fontWeight: 800, fontSize: titleSize(fact.title, 62), lineHeight: 1.14, color: INK, marginTop: 6 }, fact.title),
+      text({ fontSize: fact.body.length > 300 ? 30 : 33, fontWeight: 500, lineHeight: 1.36, color: INK }, fact.body),
+      box('Что из этого следует', fact.takeaway, q, { fontSize: 29 }),
+      h('div', { marginTop: 'auto', flexDirection: 'column', gap: 6, padding: '22px 28px', borderRadius: 24, border: `2px solid ${hexToRgba(SCIENCE, 0.35)}` },
+        text({ fontSize: 19, fontWeight: 800, letterSpacing: 3, color: SCIENCE, textTransform: 'uppercase' }, 'Источник'),
+        text({ fontSize: 27, fontWeight: 800, color: INK }, `${src.journal}, ${src.year} · ${src.first_author} et al. · n = ${fact.n.toLocaleString('ru-RU')}`),
+        text({ fontSize: 23, fontWeight: 600, color: MUTED }, `PubMed ${fact.pmid}${src.doi ? ` · doi.org/${src.doi}` : ''}`)),
+      h('div', { justifyContent: 'space-between', alignItems: 'center' },
+        h('div', { alignItems: 'center', gap: 14 },
+          bias ? wheel(bias, 56) : null,
+          text({ fontSize: 24, fontWeight: 800, color: INK }, handle)),
+        text({ fontSize: 19, fontWeight: 500, color: MUTED }, 'Не является медицинской рекомендацией'))));
+}
+
+export async function renderFactCard(fact, bias, opts = {}) {
+  return toPng(factTree(fact, bias, opts), SIZES.post);
+}
+
 async function toPng(tree, [W, H]) {
   const svg = await satori(tree, { width: W, height: H, fonts: FONTS });
   return new Resvg(svg, { fitTo: { mode: 'width', value: W }, font: { loadSystemFonts: false } }).render().asPng();

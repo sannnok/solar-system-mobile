@@ -1,0 +1,362 @@
+{
+  "checked_at": "2026-11-25T22:37:58.007Z",
+  "rule": "randomized AND double-blind, по записи PubMed",
+  "records": {
+    "8127329": {
+      "pmid": "8127329",
+      "title": "The effect of vitamin E and beta carotene on the incidence of lung cancer and other cancers in male smokers.",
+      "journal": "N Engl J Med",
+      "year": "1994",
+      "doi": "10.1056/NEJM199404143301501",
+      "first_author": "",
+      "types": [
+        "Clinical Trial",
+        "Journal Article",
+        "Randomized Controlled Trial",
+        "Research Support, U.S. Gov't, P.H.S."
+      ],
+      "randomized": true,
+      "double_blind": true,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": "METHODS: We performed a randomized, double-blind, placebo-controlled primary-prevention trial to determine whether daily supplementation with alpha-tocopherol, beta carotene, or both would reduce the incidence of lung cancer and other cance"
+      },
+      "verified": true
+    },
+    "8277950": {
+      "pmid": "8277950",
+      "title": "Effects of diets high in sucrose or aspartame on the behavior and cognitive performance of children.",
+      "journal": "N Engl J Med",
+      "year": "1994",
+      "doi": "10.1056/NEJM199402033300501",
+      "first_author": "Wolraich",
+      "types": [
+        "Clinical Trial",
+        "Journal Article",
+        "Randomized Controlled Trial",
+        "Research Support, Non-U.S. Gov't",
+        "Research Support, U.S. Gov't, P.H.S."
+      ],
+      "randomized": true,
+      "double_blind": true,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": "METHODS: We conducted a double-blind controlled trial with two groups of children: 25 normal preschool children (3 to 5 years of age), and 23 school-age children (6 to 10 years) described by their parents as sensitive to sugar."
+      },
+      "verified": true
+    },
+    "11080723": {
+      "pmid": "11080723",
+      "title": "Multicenter, double-blind, placebo-controlled, multiple-challenge evaluation of reported reactions to monosodium glutamate.",
+      "journal": "J Allergy Clin Immunol",
+      "year": "2000",
+      "doi": "10.1067/mai.2000.110794",
+      "first_author": "Geha",
+      "types": [
+        "Clinical Trial",
+        "Journal Article",
+        "Multicenter Study",
+        "Randomized Controlled Trial",
+        "Research Support, Non-U.S. Gov't"
+      ],
+      "randomized": true,
+      "double_blind": true,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": "Multicenter, double-blind, placebo-controlled, multiple-challenge evaluation of reported reactions to monosodium glutamate."
+      },
+      "verified": true
+    },
+    "12110735": {
+      "pmid": "12110735",
+      "title": "A controlled trial of arthroscopic surgery for osteoarthritis of the knee.",
+      "journal": "N Engl J Med",
+      "year": "2002",
+      "doi": "10.1056/NEJMoa013259",
+      "first_author": "Moseley",
+      "types": [
+        "Clinical Trial",
+        "Journal Article",
+        "Randomized Controlled Trial",
+        "Research Support, U.S. Gov't, Non-P.H.S."
+      ],
+      "randomized": true,
+      "double_blind": true,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": "Patients and assessors of outcome were blinded to the treatment-group assignment."
+      },
+      "verified": true
+    },
+    "16495392": {
+      "pmid": "16495392",
+      "title": "Glucosamine, chondroitin sulfate, and the two in combination for painful knee osteoarthritis.",
+      "journal": "N Engl J Med",
+      "year": "2006",
+      "doi": "10.1056/NEJMoa052771",
+      "first_author": "Clegg",
+      "types": [
+        "Journal Article",
+        "Multicenter Study",
+        "Randomized Controlled Trial",
+        "Research Support, N.I.H., Extramural"
+      ],
+      "randomized": true,
+      "double_blind": true,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": "The multicenter, double-blind, placebo- and celecoxib-controlled Glucosamine/chondroitin Arthritis Intervention Trial (GAIT) evaluated their efficacy and safety as a treatment for knee pain from osteoarthritis."
+      },
+      "verified": true
+    },
+    "19017911": {
+      "pmid": "19017911",
+      "title": "Ginkgo biloba for prevention of dementia: a randomized controlled trial.",
+      "journal": "JAMA",
+      "year": "2008",
+      "doi": "10.1001/jama.2008.683",
+      "first_author": "DeKosky",
+      "types": [
+        "Journal Article",
+        "Multicenter Study",
+        "Randomized Controlled Trial",
+        "Research Support, N.I.H., Extramural",
+        "Research Support, Non-U.S. Gov't"
+      ],
+      "randomized": true,
+      "double_blind": true,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": "DESIGN, SETTING, AND PARTICIPANTS: Randomized, double-blind, placebo-controlled clinical trial conducted in 5 academic medical centers in the United States between 2000 and 2008 with a median follow-up of 6.1 years."
+      },
+      "verified": true
+    },
+    "19657121": {
+      "pmid": "19657121",
+      "title": "A randomized trial of vertebroplasty for painful osteoporotic vertebral fractures.",
+      "journal": "N Engl J Med",
+      "year": "2009",
+      "doi": "10.1056/NEJMoa0900429",
+      "first_author": "Buchbinder",
+      "types": [
+        "Journal Article",
+        "Multicenter Study",
+        "Randomized Controlled Trial",
+        "Research Support, Non-U.S. Gov't"
+      ],
+      "randomized": true,
+      "double_blind": true,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": "METHODS: We performed a multicenter, randomized, double-blind, placebo-controlled trial in which participants with one or two painful osteoporotic vertebral fractures that were of less than 12 months' duration and unhealed, as confirmed by "
+      },
+      "verified": true
+    },
+    "23648697": {
+      "pmid": "23648697",
+      "title": "No effects of gluten in patients with self-reported non-celiac gluten sensitivity after dietary reduction of fermentable, poorly absorbed, short-chain carbohydrates.",
+      "journal": "Gastroenterology",
+      "year": "2013",
+      "doi": "10.1053/j.gastro.2013.04.051",
+      "first_author": "Biesiekierski",
+      "types": [
+        "Journal Article",
+        "Randomized Controlled Trial",
+        "Research Support, Non-U.S. Gov't"
+      ],
+      "randomized": true,
+      "double_blind": true,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": "METHODS: We performed a double-blind cross-over trial of 37 subjects (aged 24-61 y, 6 men) with NCGS and irritable bowel syndrome (based on Rome III criteria), but not celiac disease."
+      },
+      "verified": true
+    },
+    "24369076": {
+      "pmid": "24369076",
+      "title": "Arthroscopic partial meniscectomy versus sham surgery for a degenerative meniscal tear.",
+      "journal": "N Engl J Med",
+      "year": "2013",
+      "doi": "10.1056/NEJMoa1305189",
+      "first_author": "Sihvonen",
+      "types": [
+        "Journal Article",
+        "Multicenter Study",
+        "Randomized Controlled Trial",
+        "Research Support, Non-U.S. Gov't"
+      ],
+      "randomized": true,
+      "double_blind": true,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": "METHODS: We conducted a multicenter, randomized, double-blind, sham-controlled trial in 146 patients 35 to 65 years of age who had knee symptoms consistent with a degenerative medial meniscus tear and no knee osteoarthritis."
+      },
+      "verified": true
+    },
+    "24492839": {
+      "pmid": "24492839",
+      "title": "Vitamin C and E supplementation hampers cellular adaptation to endurance training in humans: a double-blind, randomised, controlled trial.",
+      "journal": "J Physiol",
+      "year": "2014",
+      "doi": "10.1113/jphysiol.2013.267419",
+      "first_author": "Paulsen",
+      "types": [
+        "Journal Article",
+        "Randomized Controlled Trial",
+        "Research Support, Non-U.S. Gov't"
+      ],
+      "randomized": true,
+      "double_blind": true,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": "Vitamin C and E supplementation hampers cellular adaptation to endurance training in humans: a double-blind, randomised, controlled trial."
+      },
+      "verified": true
+    },
+    "25064594": {
+      "pmid": "25064594",
+      "title": "Efficacy of paracetamol for acute low-back pain: a double-blind, randomised controlled trial.",
+      "journal": "Lancet",
+      "year": "2014",
+      "doi": "10.1016/S0140-6736(14)60805-9",
+      "first_author": "Williams",
+      "types": [
+        "Journal Article",
+        "Multicenter Study",
+        "Randomized Controlled Trial",
+        "Research Support, Non-U.S. Gov't"
+      ],
+      "randomized": true,
+      "double_blind": true,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": "Efficacy of paracetamol for acute low-back pain: a double-blind, randomised controlled trial."
+      },
+      "verified": true
+    },
+    "26488693": {
+      "pmid": "26488693",
+      "title": "A Phase 3 Randomized Trial of Nicotinamide for Skin-Cancer Chemoprevention.",
+      "journal": "N Engl J Med",
+      "year": "2015",
+      "doi": "10.1056/NEJMoa1506197",
+      "first_author": "Chen",
+      "types": [
+        "Clinical Trial, Phase III",
+        "Journal Article",
+        "Multicenter Study",
+        "Randomized Controlled Trial",
+        "Research Support, Non-U.S. Gov't"
+      ],
+      "randomized": true,
+      "double_blind": true,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": "METHODS: In this phase 3, double-blind, randomized, controlled trial, we randomly assigned, in a 1:1 ratio, 386 participants who had had at least two nonmelanoma skin cancers in the previous 5 years to receive 500 mg of nicotinamide twice d"
+      },
+      "verified": true
+    },
+    "26954409": {
+      "pmid": "26954409",
+      "title": "Effect of Vitamin D Supplementation on Tibial Cartilage Volume and Knee Pain Among Patients With Symptomatic Knee Osteoarthritis: A Randomized Clinical Trial.",
+      "journal": "JAMA",
+      "year": "2016",
+      "doi": "10.1001/jama.2016.1961",
+      "first_author": "Jin",
+      "types": [
+        "Journal Article",
+        "Multicenter Study",
+        "Randomized Controlled Trial",
+        "Research Support, Non-U.S. Gov't"
+      ],
+      "randomized": true,
+      "double_blind": true,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": "DESIGN, SETTING, AND PARTICIPANTS: A multicenter randomized, double-blind, placebo-controlled clinical trial in Tasmania and Victoria, Australia."
+      },
+      "verified": true
+    },
+    "29102613": {
+      "pmid": "29102613",
+      "title": "Fructan, Rather Than Gluten, Induces Symptoms in Patients With Self-Reported Non-Celiac Gluten Sensitivity.",
+      "journal": "Gastroenterology",
+      "year": "2018",
+      "doi": "10.1053/j.gastro.2017.10.040",
+      "first_author": "Skodje",
+      "types": [
+        "Journal Article",
+        "Randomized Controlled Trial",
+        "Research Support, Non-U.S. Gov't"
+      ],
+      "randomized": true,
+      "double_blind": true,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": "METHODS: We performed a double-blind crossover challenge of 59 individuals on a self-instituted gluten-free diet, for whom celiac disease had been excluded."
+      },
+      "verified": true
+    },
+    "30026230": {
+      "pmid": "30026230",
+      "title": "Subacromial decompression versus diagnostic arthroscopy for shoulder impingement: randomised, placebo surgery controlled clinical trial.",
+      "journal": "BMJ",
+      "year": "2018",
+      "doi": "10.1136/bmj.k2860",
+      "first_author": "Paavola",
+      "types": [
+        "Comparative Study",
+        "Journal Article",
+        "Multicenter Study",
+        "Randomized Controlled Trial",
+        "Video-Audio Media"
+      ],
+      "randomized": true,
+      "double_blind": true,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": "DESIGN: Multicentre, three group, randomised, double blind, sham controlled trial."
+      },
+      "verified": true
+    },
+    "33627334": {
+      "pmid": "33627334",
+      "title": "Statin treatment and muscle symptoms: series of randomised, placebo controlled n-of-1 trials.",
+      "journal": "BMJ",
+      "year": "2021",
+      "doi": "10.1136/bmj.n135",
+      "first_author": "Herrett",
+      "types": [
+        "Journal Article",
+        "Randomized Controlled Trial",
+        "Research Support, Non-U.S. Gov't"
+      ],
+      "randomized": true,
+      "double_blind": true,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": "INTERVENTIONS: Participants were randomised to a sequence of six double blinded treatment periods (two months each) of atorvastatin 20 mg daily or placebo."
+      },
+      "verified": true
+    },
+    "39377163": {
+      "pmid": "39377163",
+      "title": "Dose and timing effects of caffeine on subsequent sleep: a randomized clinical crossover trial.",
+      "journal": "Sleep",
+      "year": "2025",
+      "doi": "10.1093/sleep/zsae230",
+      "first_author": "Gardiner",
+      "types": [
+        "Journal Article",
+        "Randomized Controlled Trial"
+      ],
+      "randomized": true,
+      "double_blind": true,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": "METHODS: Using a placebo-controlled, double-blind, randomized crossover design, 23 males (25.3 ± 5.0 years) with a moderate habitual caffeine intake (<300 mg∙day-1) completed seven conditions: placebo, and 100 and 400 mg of caffeine consume"
+      },
+      "verified": true
+    }
+  }
+}

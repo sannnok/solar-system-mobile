@@ -16,13 +16,16 @@ const { bot, startScheduler } = createHealthBot({ token, store });
 
 await bot.api.setMyCommands([
   { command: 'tracker', description: 'Трекер привычек' },
+  { command: 'facts', description: 'Доказано наукой: факты из двойных слепых исследований' },
   { command: 'start', description: 'Главное меню' },
+  { command: 'terms', description: 'Условия' },
+  { command: 'paysupport', description: 'Помощь с оплатой' },
 ]);
 
 startScheduler();
 process.once('SIGINT', () => bot.stop());
 process.once('SIGTERM', () => bot.stop());
 await bot.start({
-  allowed_updates: ['message', 'callback_query'],
+  allowed_updates: ['message', 'callback_query', 'pre_checkout_query'],
   onStart: (me) => console.log(`@${me.username} запущен`),
 });

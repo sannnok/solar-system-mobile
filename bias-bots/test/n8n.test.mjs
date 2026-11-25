@@ -28,8 +28,9 @@ test('код отчёта воронки работает на реальном 
   const store = openDb(':memory:');
   store.touchUser('bias', { id: 1, first_name: 'A' }, 'reels');
   store.log('bias', 1, 'today', 'x');
-  const stats = { bias: store.stats('bias'), health: store.stats('health'), videos_published: 3, videos_left: 184 };
+  store.addPurchase({ bot: 'health', userId: 1, product: 'facts', currency: 'XTR', amount: 50, chargeId: 'c1' });
+  const stats = { bias: store.stats('bias'), health: store.stats('health'), revenue: store.revenue('health'), videos_published: 3, videos_left: 184 };
   const $input = { first: () => ({ json: stats }) };
   const out = new Function('$input', code)($input);
-  assert.match(out[0].json.text, /Кодекс<\/b>: 1 польз[\s\S]*reels: 1[\s\S]*Роликов опубликовано: 3/);
+  assert.match(out[0].json.text, /Кодекс<\/b>: 1 польз[\s\S]*reels: 1[\s\S]*💰 facts: 1 покупок, 50 ⭐[\s\S]*Роликов опубликовано: 3/);
 });

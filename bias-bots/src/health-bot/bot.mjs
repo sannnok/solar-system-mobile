@@ -7,6 +7,7 @@ import { Bot, InlineKeyboard, Keyboard } from 'grammy';
 import { ROOT, getBias } from '../lib/data.mjs';
 import { renderTipCard } from '../lib/cards.mjs';
 import { esc, sendPhotoCached, parseStartPayload, deepLink, localNow, broadcast, everyMinute } from '../lib/tg.mjs';
+import { installFacts, BTN_FACTS } from './facts-rubric.mjs';
 
 export const BOT = 'health';
 export const health = JSON.parse(readFileSync(path.join(ROOT, 'data', 'health-ru.json'), 'utf8'));
@@ -43,8 +44,8 @@ export function createHealthBot({
   const mainKeyboard = () => {
     const kb = new Keyboard();
     health.topics.forEach((t, i) => { kb.text(t.button); if (i % 2) kb.row(); });
-    kb.text(BTN.tracker);
-    if (biasUsername) kb.text(BTN.biases);
+    kb.text(BTN_FACTS).text(BTN.tracker);
+    if (biasUsername) kb.row().text(BTN.biases);
     return kb.resized().persistent();
   };
 
@@ -274,10 +275,13 @@ export function createHealthBot({
       '<b>Статистика ЗОЖ-бота</b>',
       `Пользователей: ${s.users} (+${s.new24h}), активны за сутки: ${s.active24h}`,
       `С напоминаниями: ${s.subscribed}, заблокировали: ${s.blocked}`,
+      ...store.revenue(BOT).map((r) => `💰 ${r.product}: ${r.purchases} покупок, ${r.amount} ${r.currency === 'XTR' ? '⭐' : r.currency}`),
       '', '<b>Источники:</b>', ...s.sources.map((r) => `${esc(r.source)}: ${r.n}`),
       '', '<b>События за сутки:</b>', ...s.events24h.map((r) => `${esc(r.type)}: ${r.n}`),
     ].join('\n'), { parse_mode: 'HTML' });
   });
+
+  const factsRubric = installFacts(bot, { store, BOT, me, biasLink: (b, src = 'health') => (biasUsername ? biasLink(b, src) : null), adminIds });
 
   bot.on('message:text', (ctx) => ctx.reply('Выберите тему на клавиатуре внизу 👇', { reply_markup: mainKeyboard() }));
   bot.catch((err) => console.error('[health-bot]', err.error?.description ?? err.error ?? err));
@@ -298,7 +302,7 @@ export function createHealthBot({
     store.log(BOT, null, 'reminder_sent', `${sent}/${due.length}`);
   }
 
-  return { bot, runDaily, startScheduler: () => everyMinute(runDaily), tipCaption };
+  return { bot, runDaily, startScheduler: () => everyMinute(runDaily), tipCaption, factsRubric };
 }
 
 function plural(n, one, few, many) {

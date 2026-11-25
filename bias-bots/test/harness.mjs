@@ -29,10 +29,10 @@ export function harness(create, opts = {}) {
   let updateId = 1;
   const user = { id: 42, is_bot: false, first_name: 'Аня', language_code: 'ru' };
   const chat = { id: 42, type: 'private', first_name: 'Аня' };
-  const send = (text) => bot.handleUpdate({
+  const send = (text, { from = user } = {}) => bot.handleUpdate({
     update_id: updateId++,
     message: {
-      message_id: updateId, date: 0, chat, from: user, text,
+      message_id: updateId, date: 0, chat: { ...chat, id: from.id }, from, text,
       ...(text.startsWith('/') ? { entities: [{ type: 'bot_command', offset: 0, length: text.split(' ')[0].length }] } : {}),
     },
   });
@@ -43,8 +43,9 @@ export function harness(create, opts = {}) {
       message: { message_id: 7, date: 0, chat, ...(photo ? { photo: [{ file_id: 'x', file_unique_id: 'x', width: 1, height: 1 }], caption: 'c' } : { text: 'x' }) },
     },
   });
+  const raw = (update) => bot.handleUpdate({ update_id: updateId++, ...update });
   const inline = (query) => bot.handleUpdate({ update_id: updateId++, inline_query: { id: 'iq', from: user, query, offset: '' } });
   const last = (method) => calls.filter((c) => !method || c.method === method).at(-1);
   const reset = () => { calls.length = 0; };
-  return { ...created, store, calls, send, click, inline, last, reset, user };
+  return { ...created, store, calls, send, click, inline, raw, last, reset, user, chat };
 }
