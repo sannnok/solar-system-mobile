@@ -1,6 +1,6 @@
 {
-  "checked_at": "2026-11-25T22:37:58.007Z",
-  "rule": "randomized AND double-blind, по записи PubMed",
+  "checked_at": "2026-11-25T22:48:50.154Z",
+  "rule": "A: randomized AND double-blind; B: RCT или мета-анализ РКИ; C: наблюдение — по записи PubMed",
   "records": {
     "8127329": {
       "pmid": "8127329",
@@ -15,11 +15,40 @@
         "Randomized Controlled Trial",
         "Research Support, U.S. Gov't, P.H.S."
       ],
+      "level": "A",
+      "meta": false,
       "randomized": true,
       "double_blind": true,
       "evidence": {
         "randomized": "Publication type: Randomized Controlled Trial",
-        "double_blind": "METHODS: We performed a randomized, double-blind, placebo-controlled primary-prevention trial to determine whether daily supplementation with alpha-tocopherol, beta carotene, or both would reduce the incidence of lung cancer and other cance"
+        "double_blind": "METHODS: We performed a randomized, double-blind, placebo-controlled primary-prevention trial to determine whether daily supplementation with alpha-tocopherol, beta carotene, or both would reduce the incidence of lung cancer and other cance",
+        "level": "METHODS: We performed a randomized, double-blind, placebo-controlled primary-prevention trial to determine whether daily supplementation with alpha-tocopherol, beta carotene, or both would reduce the incidence of lung cancer and other cance"
+      },
+      "verified": true
+    },
+    "8190152": {
+      "pmid": "8190152",
+      "title": "Exercise training and nutritional supplementation for physical frailty in very elderly people.",
+      "journal": "N Engl J Med",
+      "year": "1994",
+      "doi": "10.1056/NEJM199406233302501",
+      "first_author": "Fiatarone",
+      "types": [
+        "Clinical Trial",
+        "Journal Article",
+        "Randomized Controlled Trial",
+        "Research Support, Non-U.S. Gov't",
+        "Research Support, U.S. Gov't, Non-P.H.S.",
+        "Research Support, U.S. Gov't, P.H.S."
+      ],
+      "level": "B",
+      "meta": false,
+      "randomized": true,
+      "double_blind": false,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": null,
+        "level": "Publication type: Randomized Controlled Trial"
       },
       "verified": true
     },
@@ -37,11 +66,14 @@
         "Research Support, Non-U.S. Gov't",
         "Research Support, U.S. Gov't, P.H.S."
       ],
+      "level": "A",
+      "meta": false,
       "randomized": true,
       "double_blind": true,
       "evidence": {
         "randomized": "Publication type: Randomized Controlled Trial",
-        "double_blind": "METHODS: We conducted a double-blind controlled trial with two groups of children: 25 normal preschool children (3 to 5 years of age), and 23 school-age children (6 to 10 years) described by their parents as sensitive to sugar."
+        "double_blind": "METHODS: We conducted a double-blind controlled trial with two groups of children: 25 normal preschool children (3 to 5 years of age), and 23 school-age children (6 to 10 years) described by their parents as sensitive to sugar.",
+        "level": "METHODS: We conducted a double-blind controlled trial with two groups of children: 25 normal preschool children (3 to 5 years of age), and 23 school-age children (6 to 10 years) described by their parents as sensitive to sugar."
       },
       "verified": true
     },
@@ -59,11 +91,14 @@
         "Randomized Controlled Trial",
         "Research Support, Non-U.S. Gov't"
       ],
+      "level": "A",
+      "meta": false,
       "randomized": true,
       "double_blind": true,
       "evidence": {
         "randomized": "Publication type: Randomized Controlled Trial",
-        "double_blind": "Multicenter, double-blind, placebo-controlled, multiple-challenge evaluation of reported reactions to monosodium glutamate."
+        "double_blind": "Multicenter, double-blind, placebo-controlled, multiple-challenge evaluation of reported reactions to monosodium glutamate.",
+        "level": "Multicenter, double-blind, placebo-controlled, multiple-challenge evaluation of reported reactions to monosodium glutamate."
       },
       "verified": true
     },
@@ -80,11 +115,14 @@
         "Randomized Controlled Trial",
         "Research Support, U.S. Gov't, Non-P.H.S."
       ],
+      "level": "A",
+      "meta": false,
       "randomized": true,
       "double_blind": true,
       "evidence": {
         "randomized": "Publication type: Randomized Controlled Trial",
-        "double_blind": "Patients and assessors of outcome were blinded to the treatment-group assignment."
+        "double_blind": "Patients and assessors of outcome were blinded to the treatment-group assignment.",
+        "level": "Patients and assessors of outcome were blinded to the treatment-group assignment."
       },
       "verified": true
     },
@@ -101,11 +139,14 @@
         "Randomized Controlled Trial",
         "Research Support, N.I.H., Extramural"
       ],
+      "level": "A",
+      "meta": false,
       "randomized": true,
       "double_blind": true,
       "evidence": {
         "randomized": "Publication type: Randomized Controlled Trial",
-        "double_blind": "The multicenter, double-blind, placebo- and celecoxib-controlled Glucosamine/chondroitin Arthritis Intervention Trial (GAIT) evaluated their efficacy and safety as a treatment for knee pain from osteoarthritis."
+        "double_blind": "The multicenter, double-blind, placebo- and celecoxib-controlled Glucosamine/chondroitin Arthritis Intervention Trial (GAIT) evaluated their efficacy and safety as a treatment for knee pain from osteoarthritis.",
+        "level": "The multicenter, double-blind, placebo- and celecoxib-controlled Glucosamine/chondroitin Arthritis Intervention Trial (GAIT) evaluated their efficacy and safety as a treatment for knee pain from osteoarthritis."
       },
       "verified": true
     },
@@ -123,11 +164,14 @@
         "Research Support, N.I.H., Extramural",
         "Research Support, Non-U.S. Gov't"
       ],
+      "level": "A",
+      "meta": false,
       "randomized": true,
       "double_blind": true,
       "evidence": {
         "randomized": "Publication type: Randomized Controlled Trial",
-        "double_blind": "DESIGN, SETTING, AND PARTICIPANTS: Randomized, double-blind, placebo-controlled clinical trial conducted in 5 academic medical centers in the United States between 2000 and 2008 with a median follow-up of 6.1 years."
+        "double_blind": "DESIGN, SETTING, AND PARTICIPANTS: Randomized, double-blind, placebo-controlled clinical trial conducted in 5 academic medical centers in the United States between 2000 and 2008 with a median follow-up of 6.1 years.",
+        "level": "DESIGN, SETTING, AND PARTICIPANTS: Randomized, double-blind, placebo-controlled clinical trial conducted in 5 academic medical centers in the United States between 2000 and 2008 with a median follow-up of 6.1 years."
       },
       "verified": true
     },
@@ -144,11 +188,14 @@
         "Randomized Controlled Trial",
         "Research Support, Non-U.S. Gov't"
       ],
+      "level": "A",
+      "meta": false,
       "randomized": true,
       "double_blind": true,
       "evidence": {
         "randomized": "Publication type: Randomized Controlled Trial",
-        "double_blind": "METHODS: We performed a multicenter, randomized, double-blind, placebo-controlled trial in which participants with one or two painful osteoporotic vertebral fractures that were of less than 12 months' duration and unhealed, as confirmed by "
+        "double_blind": "METHODS: We performed a multicenter, randomized, double-blind, placebo-controlled trial in which participants with one or two painful osteoporotic vertebral fractures that were of less than 12 months' duration and unhealed, as confirmed by ",
+        "level": "METHODS: We performed a multicenter, randomized, double-blind, placebo-controlled trial in which participants with one or two painful osteoporotic vertebral fractures that were of less than 12 months' duration and unhealed, as confirmed by "
       },
       "verified": true
     },
@@ -164,11 +211,14 @@
         "Randomized Controlled Trial",
         "Research Support, Non-U.S. Gov't"
       ],
+      "level": "A",
+      "meta": false,
       "randomized": true,
       "double_blind": true,
       "evidence": {
         "randomized": "Publication type: Randomized Controlled Trial",
-        "double_blind": "METHODS: We performed a double-blind cross-over trial of 37 subjects (aged 24-61 y, 6 men) with NCGS and irritable bowel syndrome (based on Rome III criteria), but not celiac disease."
+        "double_blind": "METHODS: We performed a double-blind cross-over trial of 37 subjects (aged 24-61 y, 6 men) with NCGS and irritable bowel syndrome (based on Rome III criteria), but not celiac disease.",
+        "level": "METHODS: We performed a double-blind cross-over trial of 37 subjects (aged 24-61 y, 6 men) with NCGS and irritable bowel syndrome (based on Rome III criteria), but not celiac disease."
       },
       "verified": true
     },
@@ -185,11 +235,14 @@
         "Randomized Controlled Trial",
         "Research Support, Non-U.S. Gov't"
       ],
+      "level": "A",
+      "meta": false,
       "randomized": true,
       "double_blind": true,
       "evidence": {
         "randomized": "Publication type: Randomized Controlled Trial",
-        "double_blind": "METHODS: We conducted a multicenter, randomized, double-blind, sham-controlled trial in 146 patients 35 to 65 years of age who had knee symptoms consistent with a degenerative medial meniscus tear and no knee osteoarthritis."
+        "double_blind": "METHODS: We conducted a multicenter, randomized, double-blind, sham-controlled trial in 146 patients 35 to 65 years of age who had knee symptoms consistent with a degenerative medial meniscus tear and no knee osteoarthritis.",
+        "level": "METHODS: We conducted a multicenter, randomized, double-blind, sham-controlled trial in 146 patients 35 to 65 years of age who had knee symptoms consistent with a degenerative medial meniscus tear and no knee osteoarthritis."
       },
       "verified": true
     },
@@ -205,11 +258,14 @@
         "Randomized Controlled Trial",
         "Research Support, Non-U.S. Gov't"
       ],
+      "level": "A",
+      "meta": false,
       "randomized": true,
       "double_blind": true,
       "evidence": {
         "randomized": "Publication type: Randomized Controlled Trial",
-        "double_blind": "Vitamin C and E supplementation hampers cellular adaptation to endurance training in humans: a double-blind, randomised, controlled trial."
+        "double_blind": "Vitamin C and E supplementation hampers cellular adaptation to endurance training in humans: a double-blind, randomised, controlled trial.",
+        "level": "Vitamin C and E supplementation hampers cellular adaptation to endurance training in humans: a double-blind, randomised, controlled trial."
       },
       "verified": true
     },
@@ -226,11 +282,60 @@
         "Randomized Controlled Trial",
         "Research Support, Non-U.S. Gov't"
       ],
+      "level": "A",
+      "meta": false,
       "randomized": true,
       "double_blind": true,
       "evidence": {
         "randomized": "Publication type: Randomized Controlled Trial",
-        "double_blind": "Efficacy of paracetamol for acute low-back pain: a double-blind, randomised controlled trial."
+        "double_blind": "Efficacy of paracetamol for acute low-back pain: a double-blind, randomised controlled trial.",
+        "level": "Efficacy of paracetamol for acute low-back pain: a double-blind, randomised controlled trial."
+      },
+      "verified": true
+    },
+    "25982160": {
+      "pmid": "25982160",
+      "title": "Prognostic value of grip strength: findings from the Prospective Urban Rural Epidemiology (PURE) study.",
+      "journal": "Lancet",
+      "year": "2015",
+      "doi": "10.1016/S0140-6736(14)62000-6",
+      "first_author": "Leong",
+      "types": [
+        "Journal Article",
+        "Multicenter Study",
+        "Research Support, Non-U.S. Gov't"
+      ],
+      "level": "C",
+      "meta": false,
+      "randomized": false,
+      "double_blind": false,
+      "evidence": {
+        "randomized": null,
+        "double_blind": null,
+        "level": "Prognostic value of grip strength: findings from the Prospective Urban Rural Epidemiology (PURE) study."
+      },
+      "verified": true
+    },
+    "25994567": {
+      "pmid": "25994567",
+      "title": "Fish oil-derived n-3 PUFA therapy increases muscle mass and function in healthy older adults.",
+      "journal": "Am J Clin Nutr",
+      "year": "2015",
+      "doi": "10.3945/ajcn.114.105833",
+      "first_author": "Smith",
+      "types": [
+        "Journal Article",
+        "Randomized Controlled Trial",
+        "Research Support, N.I.H., Extramural"
+      ],
+      "level": "B",
+      "meta": false,
+      "randomized": true,
+      "double_blind": false,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": null,
+        "level": "Publication type: Randomized Controlled Trial"
       },
       "verified": true
     },
@@ -248,11 +353,14 @@
         "Randomized Controlled Trial",
         "Research Support, Non-U.S. Gov't"
       ],
+      "level": "A",
+      "meta": false,
       "randomized": true,
       "double_blind": true,
       "evidence": {
         "randomized": "Publication type: Randomized Controlled Trial",
-        "double_blind": "METHODS: In this phase 3, double-blind, randomized, controlled trial, we randomly assigned, in a 1:1 ratio, 386 participants who had had at least two nonmelanoma skin cancers in the previous 5 years to receive 500 mg of nicotinamide twice d"
+        "double_blind": "METHODS: In this phase 3, double-blind, randomized, controlled trial, we randomly assigned, in a 1:1 ratio, 386 participants who had had at least two nonmelanoma skin cancers in the previous 5 years to receive 500 mg of nicotinamide twice d",
+        "level": "METHODS: In this phase 3, double-blind, randomized, controlled trial, we randomly assigned, in a 1:1 ratio, 386 participants who had had at least two nonmelanoma skin cancers in the previous 5 years to receive 500 mg of nicotinamide twice d"
       },
       "verified": true
     },
@@ -269,11 +377,37 @@
         "Randomized Controlled Trial",
         "Research Support, Non-U.S. Gov't"
       ],
+      "level": "A",
+      "meta": false,
       "randomized": true,
       "double_blind": true,
       "evidence": {
         "randomized": "Publication type: Randomized Controlled Trial",
-        "double_blind": "DESIGN, SETTING, AND PARTICIPANTS: A multicenter randomized, double-blind, placebo-controlled clinical trial in Tasmania and Victoria, Australia."
+        "double_blind": "DESIGN, SETTING, AND PARTICIPANTS: A multicenter randomized, double-blind, placebo-controlled clinical trial in Tasmania and Victoria, Australia.",
+        "level": "DESIGN, SETTING, AND PARTICIPANTS: A multicenter randomized, double-blind, placebo-controlled clinical trial in Tasmania and Victoria, Australia."
+      },
+      "verified": true
+    },
+    "28698222": {
+      "pmid": "28698222",
+      "title": "A systematic review, meta-analysis and meta-regression of the effect of protein supplementation on resistance training-induced gains in muscle mass and strength in healthy adults.",
+      "journal": "Br J Sports Med",
+      "year": "2018",
+      "doi": "10.1136/bjsports-2017-097608",
+      "first_author": "Morton",
+      "types": [
+        "Journal Article",
+        "Meta-Analysis",
+        "Systematic Review"
+      ],
+      "level": "B",
+      "meta": true,
+      "randomized": true,
+      "double_blind": false,
+      "evidence": {
+        "randomized": "ELIGIBILITY CRITERIA: Only randomised controlled trials with RET ≥6 weeks in duration and dietary protein supplementation.",
+        "double_blind": null,
+        "level": "ELIGIBILITY CRITERIA: Only randomised controlled trials with RET ≥6 weeks in duration and dietary protein supplementation."
       },
       "verified": true
     },
@@ -289,11 +423,14 @@
         "Randomized Controlled Trial",
         "Research Support, Non-U.S. Gov't"
       ],
+      "level": "A",
+      "meta": false,
       "randomized": true,
       "double_blind": true,
       "evidence": {
         "randomized": "Publication type: Randomized Controlled Trial",
-        "double_blind": "METHODS: We performed a double-blind crossover challenge of 59 individuals on a self-instituted gluten-free diet, for whom celiac disease had been excluded."
+        "double_blind": "METHODS: We performed a double-blind crossover challenge of 59 individuals on a self-instituted gluten-free diet, for whom celiac disease had been excluded.",
+        "level": "METHODS: We performed a double-blind crossover challenge of 59 individuals on a self-instituted gluten-free diet, for whom celiac disease had been excluded."
       },
       "verified": true
     },
@@ -311,11 +448,130 @@
         "Randomized Controlled Trial",
         "Video-Audio Media"
       ],
+      "level": "A",
+      "meta": false,
       "randomized": true,
       "double_blind": true,
       "evidence": {
         "randomized": "Publication type: Randomized Controlled Trial",
-        "double_blind": "DESIGN: Multicentre, three group, randomised, double blind, sham controlled trial."
+        "double_blind": "DESIGN: Multicentre, three group, randomised, double blind, sham controlled trial.",
+        "level": "DESIGN: Multicentre, three group, randomised, double blind, sham controlled trial."
+      },
+      "verified": true
+    },
+    "30415629": {
+      "pmid": "30415629",
+      "title": "Vitamin D Supplements and Prevention of Cancer and Cardiovascular Disease.",
+      "journal": "N Engl J Med",
+      "year": "2019",
+      "doi": "10.1056/NEJMoa1809944",
+      "first_author": "Manson",
+      "types": [
+        "Journal Article",
+        "Multicenter Study",
+        "Randomized Controlled Trial",
+        "Research Support, N.I.H., Extramural"
+      ],
+      "level": "B",
+      "meta": false,
+      "randomized": true,
+      "double_blind": false,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": null,
+        "level": "Publication type: Randomized Controlled Trial"
+      },
+      "verified": true
+    },
+    "30646252": {
+      "pmid": "30646252",
+      "title": "Association of Cardiorespiratory Fitness With Long-term Mortality Among Adults Undergoing Exercise Treadmill Testing.",
+      "journal": "JAMA Netw Open",
+      "year": "2018",
+      "doi": "10.1001/jamanetworkopen.2018.3605",
+      "first_author": "Mandsager",
+      "types": [
+        "Journal Article"
+      ],
+      "level": "C",
+      "meta": false,
+      "randomized": false,
+      "double_blind": false,
+      "evidence": {
+        "randomized": null,
+        "double_blind": null,
+        "level": "DESIGN, SETTING, AND PARTICIPANTS: This retrospective cohort study enrolled patients at a tertiary care academic medical center from January 1, 1991, to December 31, 2014, with a median follow-up of 8.4 years."
+      },
+      "verified": true
+    },
+    "31105044": {
+      "pmid": "31105044",
+      "title": "Ultra-Processed Diets Cause Excess Calorie Intake and Weight Gain: An Inpatient Randomized Controlled Trial of Ad Libitum Food Intake.",
+      "journal": "Cell Metab",
+      "year": "2019",
+      "doi": "10.1016/j.cmet.2019.05.008",
+      "first_author": "Hall",
+      "types": [
+        "Journal Article",
+        "Randomized Controlled Trial",
+        "Research Support, N.I.H., Intramural"
+      ],
+      "level": "B",
+      "meta": false,
+      "randomized": true,
+      "double_blind": false,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": null,
+        "level": "Publication type: Randomized Controlled Trial"
+      },
+      "verified": true
+    },
+    "31303390": {
+      "pmid": "31303390",
+      "title": "2 years of calorie restriction and cardiometabolic risk (CALERIE): exploratory outcomes of a multicentre, phase 2, randomised controlled trial.",
+      "journal": "Lancet Diabetes Endocrinol",
+      "year": "2019",
+      "doi": "10.1016/S2213-8587(19)30151-2",
+      "first_author": "Kraus",
+      "types": [
+        "Clinical Trial, Phase II",
+        "Journal Article",
+        "Multicenter Study",
+        "Randomized Controlled Trial",
+        "Research Support, N.I.H., Extramural"
+      ],
+      "level": "B",
+      "meta": false,
+      "randomized": true,
+      "double_blind": false,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": null,
+        "level": "Publication type: Randomized Controlled Trial"
+      },
+      "verified": true
+    },
+    "33028588": {
+      "pmid": "33028588",
+      "title": "Effect of exercise training for five years on all cause mortality in older adults-the Generation 100 study: randomised controlled trial.",
+      "journal": "BMJ",
+      "year": "2020",
+      "doi": "10.1136/bmj.m3485",
+      "first_author": "Stensvold",
+      "types": [
+        "Journal Article",
+        "Randomized Controlled Trial",
+        "Research Support, Non-U.S. Gov't"
+      ],
+      "level": "B",
+      "meta": false,
+      "randomized": true,
+      "double_blind": false,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": null,
+        "level": "Publication type: Randomized Controlled Trial"
       },
       "verified": true
     },
@@ -331,11 +587,154 @@
         "Randomized Controlled Trial",
         "Research Support, Non-U.S. Gov't"
       ],
+      "level": "A",
+      "meta": false,
       "randomized": true,
       "double_blind": true,
       "evidence": {
         "randomized": "Publication type: Randomized Controlled Trial",
-        "double_blind": "INTERVENTIONS: Participants were randomised to a sequence of six double blinded treatment periods (two months each) of atorvastatin 20 mg daily or placebo."
+        "double_blind": "INTERVENTIONS: Participants were randomised to a sequence of six double blinded treatment periods (two months each) of atorvastatin 20 mg daily or placebo.",
+        "level": "INTERVENTIONS: Participants were randomised to a sequence of six double blinded treatment periods (two months each) of atorvastatin 20 mg daily or placebo."
+      },
+      "verified": true
+    },
+    "35129580": {
+      "pmid": "35129580",
+      "title": "Effect of Sleep Extension on Objectively Assessed Energy Intake Among Adults With Overweight in Real-life Settings: A Randomized Clinical Trial.",
+      "journal": "JAMA Intern Med",
+      "year": "2022",
+      "doi": "10.1001/jamainternmed.2021.8098",
+      "first_author": "Tasali",
+      "types": [
+        "Journal Article",
+        "Randomized Controlled Trial",
+        "Research Support, Non-U.S. Gov't",
+        "Research Support, N.I.H., Extramural"
+      ],
+      "level": "B",
+      "meta": false,
+      "randomized": true,
+      "double_blind": false,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": null,
+        "level": "Publication type: Randomized Controlled Trial"
+      },
+      "verified": true
+    },
+    "35228201": {
+      "pmid": "35228201",
+      "title": "Muscle-strengthening activities are associated with lower risk and mortality in major non-communicable diseases: a systematic review and meta-analysis of cohort studies.",
+      "journal": "Br J Sports Med",
+      "year": "2022",
+      "doi": "10.1136/bjsports-2021-105061",
+      "first_author": "Momma",
+      "types": [
+        "Journal Article",
+        "Meta-Analysis",
+        "Systematic Review"
+      ],
+      "level": "C",
+      "meta": true,
+      "randomized": false,
+      "double_blind": false,
+      "evidence": {
+        "randomized": null,
+        "double_blind": null,
+        "level": "Muscle-strengthening activities are associated with lower risk and mortality in major non-communicable diseases: a systematic review and meta-analysis of cohort studies."
+      },
+      "verified": true
+    },
+    "35247352": {
+      "pmid": "35247352",
+      "title": "Daily steps and all-cause mortality: a meta-analysis of 15 international cohorts.",
+      "journal": "Lancet Public Health",
+      "year": "2022",
+      "doi": "10.1016/S2468-2667(21)00302-9",
+      "first_author": "Paluch",
+      "types": [
+        "Journal Article",
+        "Meta-Analysis",
+        "Research Support, N.I.H., Extramural"
+      ],
+      "level": "C",
+      "meta": true,
+      "randomized": false,
+      "double_blind": false,
+      "evidence": {
+        "randomized": null,
+        "double_blind": null,
+        "level": "Daily steps and all-cause mortality: a meta-analysis of 15 international cohorts."
+      },
+      "verified": true
+    },
+    "35443107": {
+      "pmid": "35443107",
+      "title": "Calorie Restriction with or without Time-Restricted Eating in Weight Loss.",
+      "journal": "N Engl J Med",
+      "year": "2022",
+      "doi": "10.1056/NEJMoa2114833",
+      "first_author": "Liu",
+      "types": [
+        "Comparative Study",
+        "Journal Article",
+        "Randomized Controlled Trial",
+        "Research Support, Non-U.S. Gov't"
+      ],
+      "level": "B",
+      "meta": false,
+      "randomized": true,
+      "double_blind": false,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": null,
+        "level": "Publication type: Randomized Controlled Trial"
+      },
+      "verified": true
+    },
+    "35939577": {
+      "pmid": "35939577",
+      "title": "Supplemental Vitamin D and Incident Fractures in Midlife and Older Adults.",
+      "journal": "N Engl J Med",
+      "year": "2022",
+      "doi": "10.1056/NEJMoa2202106",
+      "first_author": "LeBoff",
+      "types": [
+        "Journal Article",
+        "Randomized Controlled Trial"
+      ],
+      "level": "B",
+      "meta": false,
+      "randomized": true,
+      "double_blind": false,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": null,
+        "level": "Publication type: Randomized Controlled Trial"
+      },
+      "verified": true
+    },
+    "37244291": {
+      "pmid": "37244291",
+      "title": "Multivitamin Supplementation Improves Memory in Older Adults: A Randomized Clinical Trial.",
+      "journal": "Am J Clin Nutr",
+      "year": "2023",
+      "doi": "10.1016/j.ajcnut.2023.05.011",
+      "first_author": "Yeung",
+      "types": [
+        "Randomized Controlled Trial",
+        "Journal Article",
+        "Research Support, N.I.H., Extramural",
+        "Research Support, Non-U.S. Gov't"
+      ],
+      "level": "B",
+      "meta": false,
+      "randomized": true,
+      "double_blind": false,
+      "evidence": {
+        "randomized": "Publication type: Randomized Controlled Trial",
+        "double_blind": null,
+        "level": "Publication type: Randomized Controlled Trial"
       },
       "verified": true
     },
@@ -350,11 +749,14 @@
         "Journal Article",
         "Randomized Controlled Trial"
       ],
+      "level": "A",
+      "meta": false,
       "randomized": true,
       "double_blind": true,
       "evidence": {
         "randomized": "Publication type: Randomized Controlled Trial",
-        "double_blind": "METHODS: Using a placebo-controlled, double-blind, randomized crossover design, 23 males (25.3 ± 5.0 years) with a moderate habitual caffeine intake (<300 mg∙day-1) completed seven conditions: placebo, and 100 and 400 mg of caffeine consume"
+        "double_blind": "METHODS: Using a placebo-controlled, double-blind, randomized crossover design, 23 males (25.3 ± 5.0 years) with a moderate habitual caffeine intake (<300 mg∙day-1) completed seven conditions: placebo, and 100 and 400 mg of caffeine consume",
+        "level": "METHODS: Using a placebo-controlled, double-blind, randomized crossover design, 23 males (25.3 ± 5.0 years) with a moderate habitual caffeine intake (<300 mg∙day-1) completed seven conditions: placebo, and 100 and 400 mg of caffeine consume"
       },
       "verified": true
     }

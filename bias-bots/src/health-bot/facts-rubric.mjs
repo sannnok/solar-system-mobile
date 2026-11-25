@@ -1,13 +1,17 @@
-// Рубрика «🔬 Доказано наукой» в ЗОЖ-боте и её разблокировка «за чашку кофе».
-//
-// Несколько фактов бесплатны — витрина; остальные открываются разовой покупкой
+// Рубрика «🔬 Доказано наукой» в ЗОЖ-боте — факты про тело (питание, тренировки,
+// сон, долголетие, добавки) с уровнем доказанности A/B/C — и её разблокировка
+// «за чашку кофе». Несколько фактов бесплатны — витрина; остальные открываются разовой покупкой
 // в Telegram Stars (XTR). Цифровые товары в Telegram продаются только за Stars,
 // внешний платёжный провайдер не нужен — provider_token не передаём.
 // Telegram требует у платных ботов /paysupport и /terms — они здесь же.
 import { InlineKeyboard } from 'grammy';
 import { getBias } from '../lib/data.mjs';
 import { renderFactCard } from '../lib/cards.mjs';
-import { facts, freeFacts, getFact, factCaption, pubmedUrl, FACT_TOPICS } from '../lib/facts.mjs';
+import { factsFor, getFact as getAnyFact, factCaption, pubmedUrl, FACT_TOPICS, LEVELS, levelBadge } from '../lib/facts.mjs';
+
+export const facts = factsFor('health');
+export const freeFacts = facts.filter((f) => f.free);
+const getFact = (id) => (getAnyFact(id)?.rubric === 'health' ? getAnyFact(id) : null);
 import { esc, sendPhotoCached } from '../lib/tg.mjs';
 
 export const PRODUCT = 'facts';
@@ -27,11 +31,12 @@ export function installFacts(bot, {
   const intro = (userId) => {
     const open = hasAccess(userId);
     const lines = [
-      `🔬 <b>Доказано наукой</b> — малоизвестные факты о еде, тренировках, сне и добавках.`,
+      `🔬 <b>Доказано наукой</b> — малоизвестные факты о питании, тренировках, сне и долголетии.`,
       '',
-      'Правило отбора одно и строгое: только <b>рандомизированные двойные слепые</b> исследования. '
-      + 'Каждое проверено по PubMed — в записи должны быть указаны рандомизация и двойное ослепление. '
-      + 'К каждой карточке — журнал, год, размер выборки, ограничения и ссылка на PubMed.',
+      'Только опубликованные исследования, и у каждого — честный уровень доказанности, проверенный по PubMed:',
+      ...Object.entries(LEVELS).map(([k, l]) => `<b>${k}</b> — ${esc(l.explain)} (${facts.filter((f) => f.level === k).length})`),
+      '',
+      'К каждой карточке — журнал, год, размер выборки, ограничения и ссылка на PubMed.',
       '',
       open
         ? `✅ Вам открыты все ${facts.length} фактов.`
@@ -48,7 +53,7 @@ export function installFacts(bot, {
     const kb = new InlineKeyboard().text('➡️ Следующий факт', 'f:next').url('📄 PubMed', pubmedUrl(f.pmid));
     if (bias && biasLink(bias)) kb.row().url(`🧠 ${bias.name_ru}`, biasLink(bias, 'facts'));
     await sendPhotoCached(ctx.api, store, ctx.chat.id, `fact:${f.id}:${handle}`,
-      () => renderFactCard(f, bias, { handle, topicTitle: FACT_TOPICS[f.topic] }),
+      () => renderFactCard(f, bias, { handle, topicTitle: FACT_TOPICS[f.topic], badge: levelBadge(f), color: LEVELS[f.level].color }),
       { caption: factCaption(f, { biasLink: biasLink(bias) ? (b) => biasLink(b, 'facts') : null }), parse_mode: 'HTML', reply_markup: kb });
     store.updateData(BOT, ctx.from.id, (d) => ({ ...d, seenFacts: [...new Set([...(d.seenFacts ?? []), f.id])] }));
     store.log(BOT, ctx.from.id, 'fact', f.id);
@@ -83,7 +88,7 @@ export function installFacts(bot, {
     store.log(BOT, ctx.from.id, 'invoice', price);
     await ctx.replyWithInvoice(
       'Рубрика «Доказано наукой»',
-      `Все ${facts.length} фактов из рандомизированных двойных слепых исследований со ссылками на PubMed. Разовая покупка — как чашка кофе ☕`,
+      `Все ${facts.length} фактов о питании, тренировках, сне и долголетии — с уровнем доказанности и ссылками на PubMed. Разовая покупка — как чашка кофе ☕`,
       PAYLOAD, 'XTR', [{ label: 'Доступ к рубрике', amount: price }],
     );
   }

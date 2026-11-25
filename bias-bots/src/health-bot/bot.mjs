@@ -99,6 +99,12 @@ export function createHealthBot({
       '',
       'Выберите тему внизу или заведите трекер привычек 👇',
     ].join('\n'), { parse_mode: 'HTML', reply_markup: mainKeyboard() });
+    // пришёл из «Плацебо и мифов» Кодекса — сразу в рубрику «Доказано наукой»
+    if (source?.startsWith('facts')) {
+      const v = factsRubric.intro(ctx.from.id);
+      await ctx.reply(v.text, { parse_mode: 'HTML', reply_markup: v.kb });
+      return;
+    }
     await sendTip(ctx, tipOfDay(localNow().day), 'tip_start');
     if (isNew) {
       await ctx.reply('Хотите отмечать 1–3 полезные привычки и копить серии дней? Это 10 секунд в день.', {

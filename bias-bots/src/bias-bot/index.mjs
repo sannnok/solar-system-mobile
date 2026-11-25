@@ -19,6 +19,7 @@ await bot.api.setMyCommands([
   { command: 'random', description: 'Случайное искажение' },
   { command: 'map', description: 'Карта кодекса' },
   { command: 'quiz', description: 'Квиз: угадай искажение' },
+  { command: 'myths', description: 'Плацебо и мифы: разборы исследований' },
   { command: 'subscribe', description: 'Ежедневная рассылка' },
 ]);
 

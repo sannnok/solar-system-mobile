@@ -10,6 +10,7 @@ import {
 import { renderCard } from '../lib/cards.mjs';
 import { biasCaption, biasMoreText } from '../lib/captions.mjs';
 import { esc, sendPhotoCached, parseStartPayload, deepLink, localNow, broadcast, everyMinute } from '../lib/tg.mjs';
+import { installMyths, BTN_MYTHS } from './myths-rubric.mjs';
 
 export const BOT = 'bias';
 
@@ -34,8 +35,8 @@ export function createBiasBot({
   const me = () => bot.botInfo?.username ?? '';
 
   const mainKeyboard = () => {
-    const kb = new Keyboard().text(BTN.today).text(BTN.random).row().text(BTN.map).text(BTN.quiz).row().text(BTN.sub);
-    if (healthUsername) kb.text(BTN.health);
+    const kb = new Keyboard().text(BTN.today).text(BTN.random).row().text(BTN.map).text(BTN.quiz).row().text(BTN_MYTHS).text(BTN.sub);
+    if (healthUsername) kb.row().text(BTN.health);
     return kb.resized().persistent();
   };
 
@@ -301,6 +302,8 @@ export function createBiasBot({
     await ctx.answerInlineQuery(results, { cache_time: 300, is_personal: false });
     store.log(BOT, ctx.from.id, 'inline', q || '∅');
   });
+
+  installMyths(bot, { store, BOT, me, healthUsername });
 
   // ---------- поиск по любому тексту ----------
 
