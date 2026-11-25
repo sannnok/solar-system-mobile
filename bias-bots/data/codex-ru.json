@@ -1,0 +1,46 @@
+{
+  "quadrants": [
+    {
+      "title_ru": "Слишком много информации",
+      "problem_ru": "Мир заваливает нас данными. Мозг фильтрует жёстко — и часто отбрасывает важное.",
+      "emoji": "🌊"
+    },
+    {
+      "title_ru": "Не хватает смысла",
+      "problem_ru": "Данных мало, а понять хочется. Мозг достраивает картину — иногда выдумывая.",
+      "emoji": "🧩"
+    },
+    {
+      "title_ru": "Нужно действовать быстро",
+      "problem_ru": "Времени нет, решать надо сейчас. Мозг выбирает короткие пути — и срезает углы.",
+      "emoji": "⚡"
+    },
+    {
+      "title_ru": "Что запомнить?",
+      "problem_ru": "Всё запомнить нельзя. Мозг сжимает и редактирует воспоминания — и они меняются.",
+      "emoji": "🗂"
+    }
+  ],
+  "groups": [
+    { "title_en_check": "We notice things already primed in memory or repeated often", "title_ru": "Замечаем то, что уже есть в памяти или часто повторяется" },
+    { "title_en_check": "Bizarre, funny, visually striking, or anthropomorphic things stick out more than non-bizarre/unfunny things", "title_ru": "Странное, смешное и яркое выделяется сильнее обычного" },
+    { "title_en_check": "We notice when something has changed", "title_ru": "Замечаем изменения, а не абсолютные значения" },
+    { "title_en_check": "We are drawn to details that confirm our own existing beliefs", "title_ru": "Цепляемся за то, что подтверждает наши убеждения" },
+    { "title_en_check": "We notice flaws in others more easily than we notice flaws in ourselves", "title_ru": "Чужие ошибки видим легче, чем свои" },
+    { "title_en_check": "We tend to find stories and patterns even when looking at sparse data", "title_ru": "Видим истории и закономерности даже в скудных данных" },
+    { "title_en_check": "We fill in characteristics from stereotypes, generalities, and prior histories", "title_ru": "Заполняем пробелы стереотипами и прошлым опытом" },
+    { "title_en_check": "We imagine things and people we're familiar with or fond of as better", "title_ru": "Знакомое и любимое кажется лучше" },
+    { "title_en_check": "We simplify probabilities and numbers to make them easier to think about", "title_ru": "Упрощаем вероятности и числа" },
+    { "title_en_check": "We think we know what other people are thinking", "title_ru": "Думаем, что знаем, что думают другие" },
+    { "title_en_check": "We project our current mindset and assumptions onto the past and future", "title_ru": "Переносим текущее состояние на прошлое и будущее" },
+    { "title_en_check": "To act, we must be confident we can make an impact and feel what we do is important", "title_ru": "Чтобы действовать, нужно верить в свою значимость и влияние" },
+    { "title_en_check": "To stay focused, we favor the immediate, relatable thing in front of us", "title_ru": "Предпочитаем близкое и понятное — то, что прямо перед нами" },
+    { "title_en_check": "To get things done, we tend to complete things we've invested time and energy in", "title_ru": "Доводим до конца то, во что уже вложились" },
+    { "title_en_check": "To avoid mistakes, we aim to preserve autonomy and group status, and avoid irreversible decisions", "title_ru": "Бережём статус и автономию, избегаем необратимых решений" },
+    { "title_en_check": "We favor simple–looking options and complete information over complex, ambiguous options", "title_ru": "Выбираем простое и понятное вместо сложного и неопределённого" },
+    { "title_en_check": "We edit and reinforce some memories after the fact", "title_ru": "Задним числом редактируем и укрепляем воспоминания" },
+    { "title_en_check": "We discard specifics to form generalities", "title_ru": "Отбрасываем детали ради обобщений" },
+    { "title_en_check": "We reduce events and lists to their key elements", "title_ru": "Сводим события и списки к ключевым моментам" },
+    { "title_en_check": "We store memories differently based on how they were experienced", "title_ru": "Запоминаем по-разному в зависимости от того, как пережили" }
+  ]
+}

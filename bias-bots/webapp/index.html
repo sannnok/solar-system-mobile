@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Кодекс искажений</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --bg: var(--tg-theme-bg-color, #0b0f17);
+    --fg: var(--tg-theme-text-color, #f5f7fb);
+    --muted: var(--tg-theme-hint-color, rgba(245,247,251,.55));
+    --card: var(--tg-theme-secondary-bg-color, #141a24);
+    --link: var(--tg-theme-link-color, #60a5fa);
+    --q1: #2dd4bf; --q2: #60a5fa; --q3: #a3e635; --q4: #c4b5fd;
+    --accent: var(--q1);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.4 -apple-system, "Segoe UI", Roboto, Manrope, sans-serif; -webkit-tap-highlight-color: transparent; }
+  main { max-width: 560px; margin: 0 auto; padding: 12px 16px 40px; }
+  h1 { font-size: 20px; margin: 4px 0 2px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+  .wheel-wrap { position: relative; touch-action: none; user-select: none; }
+  svg { display: block; width: 100%; height: auto; }
+  .dot { transition: r .15s; }
+  .hint { position: absolute; left: 0; right: 0; bottom: 6px; text-align: center; color: var(--muted); font-size: 12px; pointer-events: none; }
+  .card { background: var(--card); border-radius: 18px; padding: 16px; margin-top: 8px; border-top: 4px solid var(--accent); }
+  .pill { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); }
+  .group { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .name { font-size: 24px; font-weight: 800; margin: 10px 0 0; line-height: 1.15; }
+  .en { color: var(--accent); font-size: 13px; font-weight: 600; }
+  .summary { font-size: 17px; font-weight: 600; margin: 10px 0; }
+  .box { border-left: 3px solid var(--accent); padding: 6px 0 6px 12px; margin: 10px 0; }
+  .box b { display: block; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 2px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  button, .btn { appearance: none; border: 0; border-radius: 12px; padding: 10px 14px; font: inherit; font-weight: 700; cursor: pointer; text-decoration: none; }
+  .primary { background: var(--accent); color: #0b0f17; }
+  .ghost { background: transparent; color: var(--fg); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--fg) 25%, transparent); }
+  .search { width: 100%; margin: 18px 0 10px; padding: 12px 14px; border-radius: 12px; border: 0; background: var(--card); color: var(--fg); font: inherit; }
+  .chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+  .chip { white-space: nowrap; padding: 7px 12px; border-radius: 999px; background: var(--card); color: var(--fg); font-size: 13px; font-weight: 600; }
+  .chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  details { background: var(--card); border-radius: 14px; margin-top: 8px; padding: 2px 14px; }
+  summary { cursor: pointer; padding: 10px 0; font-weight: 700; font-size: 14px; list-style: none; display: flex; gap: 8px; align-items: baseline; }
+  summary::-webkit-details-marker { display: none; }
+  summary .count { color: var(--muted); font-weight: 500; margin-left: auto; }
+  .list { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 12px; }
+  .item { padding: 6px 10px; border-radius: 10px; background: color-mix(in srgb, var(--fg) 7%, transparent); color: var(--fg); font-size: 13px; font-weight: 600; }
+  .empty { color: var(--muted); padding: 12px 0; }
+  .credit { color: var(--muted); font-size: 11px; margin-top: 24px; }
+  .credit a { color: var(--link); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Кодекс когнитивных искажений</h1>
+  <div class="sub" id="sub">Ведите пальцем по кругу — 187 ловушек мышления</div>
+  <div class="wheel-wrap" id="wheelWrap">
+    <svg id="wheel" viewBox="0 0 400 400" aria-label="Колесо кодекса"></svg>
+    <div class="hint" id="hint">↻ проведите по кругу</div>
+  </div>
+  <section class="card" id="detail" aria-live="polite"></section>
+  <input class="search" id="search" type="search" placeholder="Найти: «якорь», «выживший», «ореол»…" autocomplete="off">
+  <div class="chips" id="chips"></div>
+  <div id="groups"></div>
+  <p class="credit">Схема — <a href="https://commons.wikimedia.org/wiki/File:Cognitive_bias_codex_en.svg" target="_blank" rel="noopener">The Cognitive Bias Codex</a> (John Manoogian III, Buster Benson), CC BY-SA 4.0.</p>
+</main>
+<script>
+(async () => {
+  const tg = window.Telegram?.WebApp;
+  tg?.ready(); tg?.expand();
+  const params = new URLSearchParams(location.search);
+  const bot = params.get('bot') || '';
+  const ACC = { q1: '#2dd4bf', q2: '#60a5fa', q3: '#a3e635', q4: '#c4b5fd' };
+
+  const res = await fetch('../data/biases.json');
+  const data = await res.json();
+  const { biases, quadrants, groups } = data;
+  const qById = Object.fromEntries(quadrants.map((q) => [q.id, q]));
+  const gById = Object.fromEntries(groups.map((g) => [g.id, g]));
+
+  // ---------- колесо ----------
+  const svg = document.getElementById('wheel');
+  const NS = 'http://www.w3.org/2000/svg';
+  const C = 200, R = 168;
+  const el = (name, attrs, parent = svg) => {
+    const n = document.createElementNS(NS, name);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    parent.appendChild(n);
+    return n;
+  };
+  const pos = (deg, r = R) => [C + r * Math.cos(deg * Math.PI / 180), C + r * Math.sin(deg * Math.PI / 180)];
+
+  el('circle', { cx: C, cy: C, r: R, fill: 'none', stroke: 'currentColor', 'stroke-opacity': .08, 'stroke-width': 1 });
+  // дуги групп внутри кольца
+  for (const g of groups) {
+    const list = biases.filter((b) => b.group === g.id);
+    if (!list.length) continue;
+    const a0 = Math.min(...list.map((b) => b.angle)) - .8, a1 = Math.max(...list.map((b) => b.angle)) + .8;
+    const [x0, y0] = pos(a0, R - 14), [x1, y1] = pos(a1, R - 14);
+    el('path', { d: `M${x0} ${y0} A${R - 14} ${R - 14} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1} ${y1}`, fill: 'none', stroke: ACC[g.quadrant], 'stroke-opacity': .35, 'stroke-width': 3, 'stroke-linecap': 'round' });
+  }
+  // подписи квадрантов
+  for (const q of quadrants) {
+    const list = biases.filter((b) => b.quadrant === q.id);
+    const mid = list.reduce((s, b) => s + b.angle, 0) / list.length;
+    const [x, y] = pos(mid, 92);
+    const t = el('text', { x, y, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 800, fill: ACC[q.id] });
+    const words = q.title_ru.split(' ');
+    const half = Math.ceil(words.length / 2);
+    [words.slice(0, half).join(' '), words.slice(half).join(' ')].filter(Boolean).forEach((line, i) => {
+      el('tspan', { x, dy: i ? 13 : -4 }, t).textContent = line;
+    });
+  }
+  const ray = el('line', { x1: C, y1: C, x2: C, y2: C, 'stroke-width': 2, 'stroke-linecap': 'round' });
+  const centre = el('circle', { cx: C, cy: C, r: 4 });
+  const dots = new Map();
+  for (const b of biases) {
+    const [x, y] = pos(b.angle);
+    const d = el('circle', { cx: x, cy: y, r: 3, fill: ACC[b.quadrant], 'fill-opacity': .6, class: 'dot' });
+    dots.set(b.id, d);
+  }
+  const halo = el('circle', { r: 10, 'fill-opacity': .25 });
+  const head = el('circle', { r: 5.5 });
+
+  let current = null;
+  function select(b, { scroll = false, haptic = true } = {}) {
+    if (!b || b === current) return;
+    current = b;
+    const acc = ACC[b.quadrant];
+    document.documentElement.style.setProperty('--accent', acc);
+    const [x, y] = pos(b.angle);
+    ray.setAttribute('x2', x); ray.setAttribute('y2', y); ray.setAttribute('stroke', acc);
+    centre.setAttribute('fill', acc);
+    for (const n of [halo, head]) { n.setAttribute('cx', x); n.setAttribute('cy', y); n.setAttribute('fill', acc); }
+    renderDetail(b);
+    if (haptic) tg?.HapticFeedback?.selectionChanged();
+    if (scroll) document.getElementById('wheelWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    history.replaceState(null, '', `${location.search}#${b.id}`);
+  }
+
+  // водим пальцем по кругу — выбирается ближайшее по углу искажение
+  const nearest = (deg) => biases.reduce((best, b) => {
+    const d = Math.abs(((b.angle - deg + 540) % 360) - 180);
+    return d < best.d ? { b, d } : best;
+  }, { b: null, d: 1e9 }).b;
+  const angleFromEvent = (e) => {
+    const r = svg.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width * 400 - C, y = (e.clientY - r.top) / r.height * 400 - C;
+    return { deg: Math.atan2(y, x) * 180 / Math.PI, dist: Math.hypot(x, y) };
+  };
+  let dragging = false;
+  svg.addEventListener('pointerdown', (e) => {
+    const { deg, dist } = angleFromEvent(e);
+    if (dist < 50) return;
+    dragging = true; svg.setPointerCapture(e.pointerId);
+    document.getElementById('hint').style.display = 'none';
+    select(nearest(deg));
+  });
+  svg.addEventListener('pointermove', (e) => { if (dragging) select(nearest(angleFromEvent(e).deg)); });
+  svg.addEventListener('pointerup', () => { dragging = false; });
+  svg.addEventListener('pointercancel', () => { dragging = false; });
+
+  // ---------- карточка ----------
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function renderDetail(b) {
+    const q = qById[b.quadrant], g = gById[b.group];
+    const link = bot ? `https://t.me/${bot}?start=b${b.n}_webapp` : null;
+    document.getElementById('detail').innerHTML = `
+      <span class="pill">${esc(q.title_ru)}</span>
+      <div class="group">${esc(g.title_ru)}</div>
+      <div class="name">${esc(b.name_ru)}</div>
+      <div class="en">${esc(b.name_en)} · № ${b.n}</div>
+      <div class="summary">${esc(b.summary_ru)}</div>
+      ${b.example_ru ? `<div class="box"><b>Пример</b>${esc(b.example_ru)}</div>` : ''}
+      ${b.tip_ru ? `<div class="box"><b>Как не попасться</b>${esc(b.tip_ru)}</div>` : ''}
+      <div class="actions">
+        ${link ? `<button class="primary" data-open="${link}">Карточка в чат</button>` : ''}
+        <button class="ghost" id="rnd">🎲 Случайное</button>
+        <a class="btn ghost" href="${b.wiki_ru || b.wiki_en}" target="_blank" rel="noopener">Википедия</a>
+      </div>`;
+    document.getElementById('rnd').onclick = () => select(biases[Math.floor(Math.random() * biases.length)]);
+    const open = document.querySelector('[data-open]');
+    if (open) open.onclick = () => (tg?.openTelegramLink ? tg.openTelegramLink(open.dataset.open) : window.open(open.dataset.open));
+  }
+
+  // ---------- поиск и список ----------
+  const chips = document.getElementById('chips');
+  let quad = 'all';
+  const chip = (id, label) => {
+    const b = document.createElement('button');
+    b.className = 'chip'; b.textContent = label; b.setAttribute('aria-pressed', id === quad);
+    b.onclick = () => { quad = id; [...chips.children].forEach((c) => c.setAttribute('aria-pressed', c === b)); renderList(); };
+    chips.appendChild(b);
+  };
+  chip('all', 'Все');
+  quadrants.forEach((q) => chip(q.id, q.title_ru));
+
+  const norm = (s) => s.toLowerCase().replace(/ё/g, 'е');
+  const search = document.getElementById('search');
+  search.addEventListener('input', renderList);
+  function renderList() {
+    const qs = norm(search.value.trim());
+    const stem = qs.length > 4 ? qs.slice(0, -2) : qs;
+    const box = document.getElementById('groups');
+    box.innerHTML = '';
+    let total = 0;
+    for (const g of groups) {
+      if (quad !== 'all' && g.quadrant !== quad) continue;
+      const list = biases.filter((b) => (b.group === g.id || b.also_groups?.includes(g.id))
+        && (!qs || norm(`${b.name_ru} ${b.name_en} ${b.summary_ru}`).includes(stem)));
+      if (!list.length) continue;
+      total += list.length;
+      const d = document.createElement('details');
+      d.open = Boolean(qs);
+      d.innerHTML = `<summary><span style="color:${ACC[g.quadrant]}">●</span>${esc(g.title_ru)}<span class="count">${list.length}</span></summary><div class="list"></div>`;
+      const wrap = d.querySelector('.list');
+      for (const b of list) {
+        const btn = document.createElement('button');
+        btn.className = 'item'; btn.textContent = b.name_ru;
+        btn.onclick = () => select(b, { scroll: true });
+        wrap.appendChild(btn);
+      }
+      box.appendChild(d);
+    }
+    if (!total) box.innerHTML = '<div class="empty">Ничего не нашлось — попробуйте другое слово</div>';
+  }
+  renderList();
+
+  const fromHash = biases.find((b) => b.id === location.hash.slice(1));
+  select(fromHash || biases[Math.floor(Math.random() * biases.length)], { haptic: false });
+})();
+</script>
+</body>
+</html>

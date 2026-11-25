@@ -1,0 +1,33 @@
+{
+  "name": "bias-bots",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Telegram-боты: карта когнитивных искажений (Cognitive Bias Codex) и ЗОЖ/мотивация, плюс конвейер роликов для n8n.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "parse": "node scripts/parse-codex.mjs",
+    "cards": "node scripts/render-cards.mjs",
+    "video": "node scripts/make-video.mjs",
+    "bias-bot": "node --disable-warning=ExperimentalWarning src/bias-bot/index.mjs",
+    "health-bot": "node --disable-warning=ExperimentalWarning src/health-bot/index.mjs",
+    "api": "node --disable-warning=ExperimentalWarning src/api/server.mjs",
+    "test": "node --disable-warning=ExperimentalWarning --test test/*.test.mjs"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.14.0",
+    "@fontsource/manrope": "^5.3.0",
+    "@fontsource/unbounded": "^5.3.0",
+    "@resvg/resvg-js": "^2.6.2",
+    "cheerio": "^1.2.0",
+    "dejavu-fonts-ttf": "^2.37.3",
+    "grammy": "^1.48.0",
+    "satori": "^0.63.2"
+  },
+  "overrides": {
+    "fflate": "^0.8.2"
+  }
+}

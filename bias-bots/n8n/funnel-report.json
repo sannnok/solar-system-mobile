@@ -1,0 +1,60 @@
+{
+  "name": "Воронка: еженедельный отчёт в Telegram",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "cronExpression", "expression": "43 9 * * 1" }] }
+      },
+      "id": "b2e0c1d2-0001-4c55-9a01-000000000001",
+      "name": "Понедельник 9:43",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://bots.example.com/api/stats",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "b2e0c1d2-0002-4c55-9a01-000000000002",
+      "name": "Статистика ботов",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [240, 300],
+      "credentials": { "httpHeaderAuth": { "id": "", "name": "Bias API (x-api-key)" } },
+      "notes": "Замените адрес на свой API (npm run api)."
+    },
+    {
+      "parameters": {
+        "jsCode": "const s = $input.first().json;\nconst ev = (bot, type) => (s[bot].events24h.find((e) => e.type === type) || { n: 0 }).n;\nconst src = (bot) => s[bot].sources.map((r) => `  ${r.source}: ${r.n}`).join('\\n');\nconst lines = [\n  '📊 <b>Воронка</b>',\n  '',\n  `🧠 <b>Кодекс</b>: ${s.bias.users} польз. (+${s.bias.new24h} за сутки), подписаны ${s.bias.subscribed}, ушли ${s.bias.blocked}`,\n  `Карточек за сутки: ${ev('bias', 'today') + ev('bias', 'random') + ev('bias', 'browse') + ev('bias', 'search') + ev('bias', 'deeplink')}, квиз: ${ev('bias', 'quiz_right') + ev('bias', 'quiz_wrong')}, переходов в ЗОЖ: ${ev('bias', 'open_health') + ev('bias', 'promo_health')}`,\n  'Источники:', src('bias'),\n  '',\n  `💪 <b>ЗОЖ</b>: ${s.health.users} польз. (+${s.health.new24h}), с напоминаниями ${s.health.subscribed}`,\n  `Отметок привычек за сутки: ${ev('health', 'checkin')}`,\n  'Источники:', src('health'),\n  '',\n  `🎬 Роликов опубликовано: ${s.videos_published}, осталось: ${s.videos_left}`,\n];\nreturn [{ json: { text: lines.join('\\n') } }];"
+      },
+      "id": "b2e0c1d2-0003-4c55-9a01-000000000003",
+      "name": "Собрать отчёт",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "REPLACE_WITH_YOUR_TELEGRAM_ID",
+        "text": "={{ $json.text }}",
+        "additionalFields": { "parse_mode": "HTML" }
+      },
+      "id": "b2e0c1d2-0004-4c55-9a01-000000000004",
+      "name": "Отправить себе",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [720, 300],
+      "credentials": { "telegramApi": { "id": "", "name": "Telegram: бот-админ канала" } }
+    }
+  ],
+  "connections": {
+    "Понедельник 9:43": { "main": [[{ "node": "Статистика ботов", "type": "main", "index": 0 }]] },
+    "Статистика ботов": { "main": [[{ "node": "Собрать отчёт", "type": "main", "index": 0 }]] },
+    "Собрать отчёт": { "main": [[{ "node": "Отправить себе", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1", "timezone": "Europe/Moscow" },
+  "pinData": {}
+}

@@ -1,0 +1,20 @@
+# docker compose up -d — оба бота и API для n8n с общей базой в ./state
+services:
+  bias-bot:
+    build: .
+    env_file: .env
+    volumes: ["./state:/app/state"]
+    restart: unless-stopped
+  health-bot:
+    build: .
+    command: ["node", "--disable-warning=ExperimentalWarning", "src/health-bot/index.mjs"]
+    env_file: .env
+    volumes: ["./state:/app/state"]
+    restart: unless-stopped
+  api:
+    build: .
+    command: ["node", "--disable-warning=ExperimentalWarning", "src/api/server.mjs"]
+    env_file: .env
+    volumes: ["./state:/app/state"]
+    ports: ["8787:8787"]
+    restart: unless-stopped

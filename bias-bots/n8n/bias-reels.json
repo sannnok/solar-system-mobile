@@ -1,0 +1,220 @@
+{
+  "name": "Кодекс искажений → ролик дня (Reels/Shorts) → Telegram-канал",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "cronExpression", "expression": "17 10 * * *" }] }
+      },
+      "id": "a1f0c1d2-0001-4c55-9a01-000000000001",
+      "name": "Каждый день 10:17",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "s1", "name": "api_url", "value": "https://bots.example.com", "type": "string" },
+            { "id": "s2", "name": "channel_id", "value": "@your_channel", "type": "string" },
+            { "id": "s3", "name": "use_tts", "value": true, "type": "boolean" },
+            { "id": "s4", "name": "voice_id", "value": "REPLACE_WITH_ELEVENLABS_VOICE_ID", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1f0c1d2-0002-4c55-9a01-000000000002",
+      "name": "Настройки",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 300],
+      "notes": "Адрес API (npm run api), канал и голос ElevenLabs. use_tts=false — ролик без озвучки (музыка из MUSIC_FILE на сервере)."
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Настройки').item.json.api_url }}/api/bias/next-video",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "a1f0c1d2-0003-4c55-9a01-000000000003",
+      "name": "Следующее искажение",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 300],
+      "credentials": { "httpHeaderAuth": { "id": "", "name": "Bias API (x-api-key)" } }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Настройки').item.json.api_url }}/api/bias/{{ $json.id }}/script",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": { "timeout": 180000 }
+      },
+      "id": "a1f0c1d2-0004-4c55-9a01-000000000004",
+      "name": "Сценарий (Claude)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, 300],
+      "credentials": { "httpHeaderAuth": { "id": "", "name": "Bias API (x-api-key)" } },
+      "notes": "Сервер пишет сценарий через Claude, если задан ANTHROPIC_API_KEY, иначе — шаблон из карточки."
+    },
+    {
+      "parameters": {
+        "conditions": { "boolean": [{ "value1": "={{ $('Настройки').item.json.use_tts }}", "value2": true }] }
+      },
+      "id": "a1f0c1d2-0005-4c55-9a01-000000000005",
+      "name": "Озвучивать?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [880, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.elevenlabs.io/v1/text-to-speech/{{ $('Настройки').item.json.voice_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": { "parameters": [{ "name": "output_format", "value": "mp3_44100_128" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $('Сценарий (Claude)').item.json.voiceover, model_id: 'eleven_multilingual_v2', voice_settings: { stability: 0.45, similarity_boost: 0.8 } }) }}",
+        "options": { "response": { "response": { "responseFormat": "file", "outputPropertyName": "data" } } }
+      },
+      "id": "a1f0c1d2-0006-4c55-9a01-000000000006",
+      "name": "Озвучка ElevenLabs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1100, 200],
+      "credentials": { "httpHeaderAuth": { "id": "", "name": "ElevenLabs (xi-api-key)" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Настройки').item.json.api_url }}/api/video/{{ $('Следующее искажение').item.json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": { "parameters": [{ "name": "hook", "value": "={{ $('Сценарий (Claude)').item.json.hook }}" }] },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {
+          "timeout": 300000,
+          "response": { "response": { "responseFormat": "file", "outputPropertyName": "data" } }
+        }
+      },
+      "id": "a1f0c1d2-0007-4c55-9a01-000000000007",
+      "name": "Ролик с озвучкой",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1320, 200],
+      "credentials": { "httpHeaderAuth": { "id": "", "name": "Bias API (x-api-key)" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Настройки').item.json.api_url }}/api/video/{{ $('Следующее искажение').item.json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": { "parameters": [{ "name": "hook", "value": "={{ $('Сценарий (Claude)').item.json.hook }}" }] },
+        "options": {
+          "timeout": 300000,
+          "response": { "response": { "responseFormat": "file", "outputPropertyName": "data" } }
+        }
+      },
+      "id": "a1f0c1d2-0008-4c55-9a01-000000000008",
+      "name": "Ролик без озвучки",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1320, 420],
+      "credentials": { "httpHeaderAuth": { "id": "", "name": "Bias API (x-api-key)" } }
+    },
+    {
+      "parameters": {
+        "operation": "sendVideo",
+        "chatId": "={{ $('Настройки').item.json.channel_id }}",
+        "binaryData": true,
+        "binaryPropertyName": "data",
+        "additionalFields": {
+          "caption": "={{ $('Сценарий (Claude)').item.json.caption }}\n\n👉 {{ $('Следующее искажение').item.json.bot_link }}\n\n{{ $('Сценарий (Claude)').item.json.hashtags.join(' ') }}"
+        }
+      },
+      "id": "a1f0c1d2-0009-4c55-9a01-000000000009",
+      "name": "В Telegram-канал",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1560, 300],
+      "credentials": { "telegramApi": { "id": "", "name": "Telegram: бот-админ канала" } }
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "upload",
+        "title": "={{ $('Сценарий (Claude)').item.json.title }} #shorts",
+        "regionCode": "RU",
+        "categoryId": "27",
+        "binaryProperty": "data",
+        "options": {
+          "description": "={{ $('Сценарий (Claude)').item.json.caption }}\n\n{{ $('Следующее искажение').item.json.bot_link }}\n\n{{ $('Сценарий (Claude)').item.json.hashtags.join(' ') }}",
+          "privacyStatus": "public"
+        }
+      },
+      "id": "a1f0c1d2-0010-4c55-9a01-000000000010",
+      "name": "YouTube Shorts (включить после подключения)",
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [1560, 480],
+      "disabled": true,
+      "credentials": { "youTubeOAuth2Api": { "id": "", "name": "YouTube" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Настройки').item.json.api_url }}/api/video/{{ $('Следующее искажение').item.json.id }}/published",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ channel: $('Настройки').item.json.channel_id, telegram_message_id: $json.result?.message_id ?? null, hook: $('Сценарий (Claude)').item.json.hook, script_source: $('Сценарий (Claude)').item.json.source }) }}",
+        "options": {}
+      },
+      "id": "a1f0c1d2-0011-4c55-9a01-000000000011",
+      "name": "Отметить опубликованным",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1800, 300],
+      "credentials": { "httpHeaderAuth": { "id": "", "name": "Bias API (x-api-key)" } }
+    }
+  ],
+  "connections": {
+    "Каждый день 10:17": { "main": [[{ "node": "Настройки", "type": "main", "index": 0 }]] },
+    "Настройки": { "main": [[{ "node": "Следующее искажение", "type": "main", "index": 0 }]] },
+    "Следующее искажение": { "main": [[{ "node": "Сценарий (Claude)", "type": "main", "index": 0 }]] },
+    "Сценарий (Claude)": { "main": [[{ "node": "Озвучивать?", "type": "main", "index": 0 }]] },
+    "Озвучивать?": {
+      "main": [
+        [{ "node": "Озвучка ElevenLabs", "type": "main", "index": 0 }],
+        [{ "node": "Ролик без озвучки", "type": "main", "index": 0 }]
+      ]
+    },
+    "Озвучка ElevenLabs": { "main": [[{ "node": "Ролик с озвучкой", "type": "main", "index": 0 }]] },
+    "Ролик с озвучкой": {
+      "main": [[
+        { "node": "В Telegram-канал", "type": "main", "index": 0 },
+        { "node": "YouTube Shorts (включить после подключения)", "type": "main", "index": 0 }
+      ]]
+    },
+    "Ролик без озвучки": {
+      "main": [[
+        { "node": "В Telegram-канал", "type": "main", "index": 0 },
+        { "node": "YouTube Shorts (включить после подключения)", "type": "main", "index": 0 }
+      ]]
+    },
+    "В Telegram-канал": { "main": [[{ "node": "Отметить опубликованным", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1", "timezone": "Europe/Moscow" },
+  "pinData": {}
+}
