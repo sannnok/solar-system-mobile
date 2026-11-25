@@ -10,7 +10,9 @@
 //   GET  /api/bias/:id/script                сценарий ролика (Claude или шаблон)
 //   GET  /api/card/:id.png?format=post|story карточка
 //   GET  /api/slide/:id/:kind.png?hook=…     кадр ролика (hook|what|example|tip)
-//   POST /api/video/:id?hook=…&cta=…         → video/mp4. Тело: озвучка (audio/*) или пусто
+//   POST /api/video/:id?hook=…&cta=…&style=  → video/mp4. Тело: озвучка (audio/*) или пусто;
+//                                              style=dynamic (Remotion, по умолчанию) | simple (ffmpeg)
+//   GET  /api/cover/:id.png?hook=…            обложка ролика (кадр с колесом и названием)
 //   POST /api/video/:id/published            {"url": "..."} — отметить опубликованным
 //   GET  /webapp/…                           Telegram Mini App «интерактивная карта»
 //
@@ -28,6 +30,7 @@ import { renderCard, renderSlide, SLIDE_KINDS } from '../lib/cards.mjs';
 import { biasCaption, biasPlainCaption } from '../lib/captions.mjs';
 import { generateReelScript } from '../lib/script.mjs';
 import { makeVideo } from '../lib/video.mjs';
+import { renderReel, renderReelStill } from '../lib/reel.mjs';
 import { deepLink } from '../lib/tg.mjs';
 
 const MAX_AUDIO = 25 * 1024 * 1024;
@@ -110,8 +113,9 @@ export function createApi({ store, apiKey = process.env.API_KEY || '', botUserna
           await writeFile(audio, body);
         }
         const outFile = path.join(dir, `${b.id}.mp4`);
-        const res = await makeVideo(b, { outFile, hook, cta, handle, audio });
-        store.setVideo(b.id, 'rendered', null, { duration: res.duration, hook });
+        const style = (url.searchParams.get('style') || process.env.VIDEO_STYLE || 'dynamic') === 'simple' ? 'simple' : 'dynamic';
+        const res = style === 'simple' ? await makeVideo(b, { outFile, hook, cta, handle, audio }) : await renderReel(b, { outFile, hook, cta, handle, audio });
+        store.setVideo(b.id, 'rendered', null, { duration: res.duration, hook, style });
         return {
           status: 200,
           headers: {
@@ -121,6 +125,18 @@ export function createApi({ store, apiKey = process.env.API_KEY || '', botUserna
           },
           body: await readFile(outFile),
         };
+      } finally {
+        await rm(dir, { recursive: true, force: true });
+      }
+    }],
+    ['GET', /^\/api\/cover\/([\w-]+)\.png$/, async (m, url) => {
+      const b = getBias(m[1]);
+      if (!b) return notFound();
+      const dir = await mkdtemp(path.join(tmpdir(), 'api-cover-'));
+      try {
+        const outFile = path.join(dir, 'cover.png');
+        await renderReelStill(b, { outFile, hook: url.searchParams.get('hook') ?? '', handle });
+        return png(await readFile(outFile));
       } finally {
         await rm(dir, { recursive: true, force: true });
       }

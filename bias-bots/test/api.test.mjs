@@ -58,7 +58,7 @@ let hasFfmpeg = true;
 try { execFileSync('ffmpeg', ['-version'], { stdio: 'ignore' }); } catch { hasFfmpeg = false; }
 
 test('POST /api/video отдаёт mp4', { skip: !hasFfmpeg, timeout: 120_000 }, async () => {
-  const r = await api('/api/video/halo-effect?hook=' + encodeURIComponent('Почему красивым верят больше?'), { method: 'POST' });
+  const r = await api('/api/video/halo-effect?style=simple&hook=' + encodeURIComponent('Почему красивым верят больше?'), { method: 'POST' });
   assert.equal(r.status, 200);
   assert.equal(r.headers.get('content-type'), 'video/mp4');
   const buf = Buffer.from(await r.arrayBuffer());

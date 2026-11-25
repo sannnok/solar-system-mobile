@@ -15,17 +15,27 @@
     "health-bot": "node --disable-warning=ExperimentalWarning src/health-bot/index.mjs",
     "api": "node --disable-warning=ExperimentalWarning src/api/server.mjs",
     "test": "node --disable-warning=ExperimentalWarning --test test/*.test.mjs",
-    "verify-facts": "node scripts/verify-facts.mjs"
+    "verify-facts": "node scripts/verify-facts.mjs",
+    "studio": "remotion studio video/index.jsx"
   },
   "license": "MIT",
   "dependencies": {
     "@anthropic-ai/sdk": "^1.14.0",
     "@fontsource/manrope": "^5.3.0",
     "@fontsource/unbounded": "^5.3.0",
+    "@remotion/bundler": "^4.0.547",
+    "@remotion/cli": "^4.0.547",
+    "@remotion/noise": "^4.0.547",
+    "@remotion/paths": "^4.0.547",
+    "@remotion/renderer": "^4.0.547",
+    "@remotion/transitions": "^4.0.547",
     "@resvg/resvg-js": "^2.6.2",
     "cheerio": "^1.2.0",
     "dejavu-fonts-ttf": "^2.37.3",
     "grammy": "^1.48.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.547",
     "satori": "^0.63.2"
   },
   "overrides": {
