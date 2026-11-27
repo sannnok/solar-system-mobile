@@ -1,0 +1,22 @@
+# Render Blueprint for the ArmLab Telegram Mini App prototype (armwrestling/).
+#
+# A static site: the build only copies armwrestling/ and vendor/three into
+# dist/, so nothing else in the repository is published. The Mini App URL to
+# give @BotFather is https://<service>.onrender.com/armwrestling/
+services:
+  - type: web
+    runtime: static
+    name: armlab
+    buildCommand: node scripts/build-armlab.mjs
+    staticPublishPath: dist
+    pullRequestPreviewsEnabled: false
+    routes:
+      - type: redirect
+        source: /
+        destination: /armwrestling/
+    headers:
+      # Telegram's in-app browser caches hard; revalidate so a new deploy shows
+      # up on the next open. Unchanged files still come back as 304s.
+      - path: /*
+        name: Cache-Control
+        value: no-cache
