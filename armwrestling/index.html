@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#070b12" />
+    <meta
+      name="description"
+      content="Интерактивная биомеханика армрестлинга: какие мышцы работают, куда направлено усилие и как выглядит типичная ошибка."
+    />
+    <title>ArmLab — биомеханика армрестлинга</title>
+    <!-- Telegram Mini Apps SDK. Harmless in a normal browser; see src/telegram.js. -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="./styles/app.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23070b12'/%3E%3Cpath d='M9 24c3-1 4-4 4-8l1-6c1-2 4-2 4 0v5c2-1 5 0 5 3 0 4-3 6-7 6' fill='none' stroke='%233cf2c0' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E"
+    />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "../vendor/three/three.module.min.js",
+          "three/addons/": "../vendor/three/addons/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="scene" aria-label="Трёхмерная модель руки с мышцами"></canvas>
+      <div id="labels" class="labels" aria-hidden="true"></div>
+
+      <header class="top" id="top">
+        <div class="top__row">
+          <div class="brand">
+            <span class="brand__mark" aria-hidden="true"></span>
+            <span class="brand__text">
+              <span class="brand__name">ArmLab</span>
+              <span class="brand__sub" id="hello">биомеханика армрестлинга</span>
+            </span>
+          </div>
+          <span class="badge" id="badge">прототип</span>
+          <button class="icon-btn" id="fullscreen" type="button" aria-label="На весь экран" hidden>
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M3 8V3h5M12 3h5v5M17 12v5h-5M8 17H3v-5" />
+            </svg>
+          </button>
+        </div>
+        <nav class="chips chips--scroll" id="exercises" aria-label="Упражнения"></nav>
+      </header>
+
+      <aside class="now" id="now" aria-label="Мышцы, которые сейчас работают">
+        <p class="now__title">Сейчас работают</p>
+        <ol class="now__list" id="now-list"></ol>
+      </aside>
+
+      <div class="legend" aria-hidden="true">
+        <span>0</span><i></i><span>100%</span>
+      </div>
+
+      <section class="sheet" id="sheet" aria-label="Управление">
+        <div class="phase" aria-live="polite">
+          <span class="phase__name" id="phase-name"></span>
+          <span class="phase__cue" id="phase-cue"></span>
+        </div>
+
+        <div class="error-card" id="error-card" hidden>
+          <p class="error-card__title" id="error-title"></p>
+          <p class="error-card__text" id="error-text"></p>
+          <p class="error-card__risk" id="error-risk"></p>
+        </div>
+
+        <div class="timeline">
+          <button class="round-btn" id="play" type="button" aria-label="Пауза">
+            <svg class="i-pause" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4h3v12H6zM11 4h3v12h-3z" /></svg>
+            <svg class="i-play" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4l10 6-10 6z" /></svg>
+          </button>
+          <div class="track">
+            <div class="track__phases" id="track-phases"></div>
+            <input id="scrub" type="range" min="0" max="1000" step="1" value="0" aria-label="Фаза повтора" />
+          </div>
+          <button class="speed" id="speed" type="button" aria-label="Скорость">1×</button>
+        </div>
+
+        <div class="seg" id="mode" role="radiogroup" aria-label="Режим">
+          <button type="button" role="radio" data-mode="technique" aria-checked="true">Техника</button>
+          <button type="button" role="radio" data-mode="error" aria-checked="false">Типичная ошибка</button>
+        </div>
+
+        <div class="chips chips--scroll chips--small" id="toolbar">
+          <span class="chips__label">Вид</span>
+          <span class="chips__group" id="views"></span>
+          <span class="chips__sep" aria-hidden="true"></span>
+          <span class="chips__label">Слои</span>
+          <span class="chips__group" id="layers"></span>
+        </div>
+      </section>
+
+      <section class="card" id="muscle-card" aria-labelledby="card-name" hidden>
+        <button class="card__close" id="card-close" type="button" aria-label="Закрыть">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" /></svg>
+        </button>
+        <p class="card__latin" id="card-latin"></p>
+        <h2 class="card__name" id="card-name"></h2>
+        <div class="meter" aria-hidden="true"><i id="card-meter"></i></div>
+        <p class="card__pct" id="card-pct"></p>
+        <p class="card__label">В армрестлинге</p>
+        <p class="card__text" id="card-role"></p>
+        <p class="card__label">Как тренировать</p>
+        <p class="card__text" id="card-train"></p>
+        <p class="card__note" id="card-note" hidden></p>
+      </section>
+    </div>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
