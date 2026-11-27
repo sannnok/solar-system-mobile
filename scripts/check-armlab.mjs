@@ -104,6 +104,39 @@ for (const ex of EXERCISES) {
   }
 }
 
+// ── the match: invariants of the two-arm statics (armwrestling/src/data/match.js) ──
+const { MatchSolver, TECHNIQUES } = await import('../armwrestling/src/data/match.js');
+const { TYPICAL } = await import('../armwrestling/src/data/strength.js');
+const solver = new MatchSolver();
+const match = (me, opp, extra = {}) =>
+  solver.solve({ me, opp, grip: 'medium', height: 'even', capsMe: TYPICAL, capsOpp: TYPICAL, ...extra });
+const expect = (ok, text, detail) => {
+  if (!ok) failures++;
+  console.log(`  ${ok ? '✓' : '✗'} ${text}${detail ? ` — ${detail}` : ''}`);
+};
+const rotation = (r) => r.me.find((d) => d.joint === 'pron').share;
+console.log('\nСхватка');
+for (const t of TECHNIQUES) {
+  const r = match(t.id, t.id);
+  expect(Math.abs(r.margin) < 0.02, `${t.label}, зеркальная схватка — ничья`, `перевес ${(r.margin * 100).toFixed(1)}%`);
+}
+for (const a of TECHNIQUES) {
+  for (const b of TECHNIQUES) {
+    if (a.id >= b.id) continue;
+    const ab = match(a.id, b.id);
+    const ba = match(b.id, a.id);
+    expect(Math.abs((1 + ab.margin) * (1 + ba.margin) - 1) < 0.02, `${a.label} / ${b.label}: исход симметричен при обмене сторонами`);
+    expect(ab.mismatch < 0.05, `${a.label} / ${b.label}: кисти сходятся`, `зазор ${(ab.mismatch * 10).toFixed(2)} см`);
+  }
+}
+const hh = rotation(match('hook', 'hook'));
+const ht = rotation(match('hook', 'top'));
+expect(hh < 0.1, 'Крюк против крюка: за вращение не борются', `ротация предплечья ${Math.round(hh * 100)}%`);
+expect(ht > 0.15, 'Крюк против верха: супинация против пронации', `ротация предплечья ${Math.round(ht * 100)}%`);
+const high = match('top', 'top', { height: 'me' }).margin;
+const low = match('top', 'top', { height: 'opp' }).margin;
+expect(high > 0.1 && low < -0.1, 'Чья кисть выше, тот в выигрыше', `выше ты ${Math.round(high * 100)}%, выше соперник ${Math.round(low * 100)}%`);
+
 console.log(failures ? `\n${failures} нарушений` : '\nВсе сопротивления мешают движению, все векторы усилия ведут его.');
 console.log(warnings ? `${warnings} предупреждений: удерживающие мышцы недогружены.` : 'Удерживающие мышцы нагружены везде, где их нагружает сопротивление.');
 process.exit(failures ? 1 : 0);

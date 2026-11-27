@@ -23,3 +23,20 @@ export const ACTIONS = [
 ];
 
 export const TYPICAL = Object.fromEntries(ACTIONS.map((a) => [a.id, a.typical]));
+
+/**
+ * Which muscles carry each action, and how much of it (0..1). Used where muscle
+ * effort is derived from the mechanics rather than hand-set — the match.
+ */
+export const ACTION_MUSCLES = {
+  elbowFlex: { biceps: 1, brachialis: 1, brachioradialis: 0.8, pronatorTeres: 0.3 },
+  elbowExt: { triceps: 1 },
+  shoulderIR: { pec: 1, subscapularis: 1, lat: 0.85, teresMajor: 0.85, delt: 0.7 },
+  shoulderER: { infraspinatus: 1, deltMid: 0.4 },
+  supination: { supinator: 1, biceps: 0.9, brachioradialis: 0.3 },
+  pronation: { pronatorTeres: 1, pronatorQuadratus: 1, fcr: 0.3, brachioradialis: 0.3 },
+  wristFlex: { fcu: 1, fcr: 1, fds: 0.8, fdp: 0.8, pronatorTeres: 0.2 },
+  wristExt: { ecrl: 1, ecrb: 1, ecu: 1, ed: 0.6 },
+  radialDev: { ecrl: 1, apl: 1, ecrb: 0.8, fcr: 0.8 },
+  ulnarDev: { fcu: 1, ecu: 1 },
+};

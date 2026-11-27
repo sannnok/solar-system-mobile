@@ -57,18 +57,67 @@ export function resistanceLoads(rig, pose, resist) {
 }
 
 /**
- * What it takes to hold a pose against a resistance of `newtons`: for each
- * joint, the action the athlete needs (the resistance pulls one way, so the
- * muscles that turn the other way must hold), the torque, and that torque as
- * a share of the athlete's maximum for that action. Sorted, weakest link first.
+ * Joint torques (N·m, signed: the direction the resistance pulls each joint)
+ * turned into what it takes to hold them: the action that must resist, the
+ * torque, and that torque as a share of the athlete's maximum for that
+ * action. Sorted, weakest link first.
  */
-export function jointDemands(rig, pose, resist, newtons, capacities) {
-  const Q = resistanceLoads(rig, pose, resist);
+export function demandsFromTorques(torques, capacities) {
   return JOINTS.map((joint) => {
-    const sign = Q[joint] < 0 ? 1 : -1; // pulled towards −q → hold with +q
+    const sign = torques[joint] < 0 ? 1 : -1; // pulled towards −q → hold with +q
     const action = ACTIONS.find((a) => a.joint === joint && a.sign === sign);
-    const torque = Math.abs(Q[joint]) * DM * newtons;
+    const torque = Math.abs(torques[joint]);
     const max = capacities[action.id] ?? action.typical;
     return { joint, action, torque, max, share: torque / max };
   }).sort((a, b) => b.share - a.share);
+}
+
+/** What it takes to hold a pose against a resistance of `newtons`. */
+export function jointDemands(rig, pose, resist, newtons, capacities) {
+  const Q = resistanceLoads(rig, pose, resist);
+  const torques = Object.fromEntries(JOINTS.map((q) => [q, Q[q] * DM * newtons]));
+  return demandsFromTorques(torques, capacities);
+}
+
+// ── wrenches: force and torque through a grip ───────────────────────────────
+
+const SPOKE = 0.5; // dm
+const WORLD_AXES = [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)];
+
+/**
+ * How the hand moves when each joint turns, per radian: the world velocity of
+ * a hand point and the hand's angular velocity. The angular velocity comes
+ * from the velocities of three spokes around the point,
+ *   ω = Σ rₖ × (vₖ − v₀) / (2e²),
+ * so it is read off the actual motion — correct through mirrored parents,
+ * where turning an axis vector would flip its sense.
+ */
+export function handMotion(rig, pose, point) {
+  rig.update(pose);
+  const centre = rig.hand.localToWorld(point.clone());
+  const locals = [point.clone(), ...WORLD_AXES.map((a) => rig.hand.worldToLocal(centre.clone().addScaledVector(a, SPOKE)))];
+  const positions = (p) => {
+    rig.update(p);
+    return locals.map((l) => rig.hand.localToWorld(l.clone()));
+  };
+  const out = {};
+  for (const q of JOINTS) {
+    const plus = positions({ ...pose, [q]: pose[q] + EPS });
+    const minus = positions({ ...pose, [q]: pose[q] - EPS });
+    const v = plus.map((p, i) => p.sub(minus[i]).divideScalar(2 * EPS));
+    const w = new THREE.Vector3();
+    WORLD_AXES.forEach((a, k) => w.add(a.clone().multiplyScalar(SPOKE).cross(v[k + 1].clone().sub(v[0]))));
+    out[q] = { v: v[0], w: w.divideScalar(2 * SPOKE * SPOKE) };
+  }
+  rig.update(pose);
+  return out;
+}
+
+/**
+ * Generalised forces, in N·m, of a wrench on the hand: force F (N, world) at
+ * the motion's point and torque M (N·m, world). Positive pulls the joint
+ * towards +q.
+ */
+export function wrenchTorques(motion, F, M) {
+  return Object.fromEntries(JOINTS.map((q) => [q, DM * F.dot(motion[q].v) + M.dot(motion[q].w)]));
 }

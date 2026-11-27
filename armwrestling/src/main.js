@@ -14,6 +14,17 @@ import { MUSCLES } from './data/anatomy.js';
 import { EXERCISES, activationsAt, effort, phaseAt, poseAt, variantOf } from './data/exercises.js';
 import { jointDemands } from './data/mechanics.js';
 import { ACTIONS, TYPICAL } from './data/strength.js';
+import {
+  GRIPS,
+  HEIGHTS,
+  MatchSolver,
+  PAD_DISTANCE,
+  PROFILES,
+  TECHNIQUES,
+  activationsFromDemands,
+  profileCaps,
+} from './data/match.js';
+import { createMatchPanel } from './matchPanel.js';
 import { CameraRig, VIEWS } from './render/camera.js';
 import { MuscleSystem } from './render/muscles.js';
 import { Overlays } from './render/overlays.js';
@@ -58,6 +69,33 @@ const muscles = new MuscleSystem(rig, MUSCLES, time);
 scene.add(muscles.group);
 muscles.captureRest();
 
+// The opponent for the match: the same arm turned 180° about the vertical
+// (not mirrored — that would be a left arm), with its own pad and peg.
+const oppOuter = new THREE.Group();
+oppOuter.rotation.y = Math.PI;
+oppOuter.position.set(0, 0, PAD_DISTANCE);
+const oppMirror = new THREE.Group();
+oppMirror.scale.x = -1;
+oppOuter.add(oppMirror);
+scene.add(oppOuter);
+const oppRig = new Rig();
+oppMirror.add(oppRig.root);
+const oppPad = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.14, 1.4), new THREE.MeshStandardMaterial({ color: 0x1b2532, roughness: 0.9 }));
+oppPad.position.set(0.05, 0.07, 0);
+const oppPeg = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.11, 0.11, 2.1, 16),
+  new THREE.MeshStandardMaterial({ color: 0x3a4553, metalness: 0.85, roughness: 0.3 }),
+);
+oppPeg.position.set(-2.6, 1.05, -0.6);
+oppMirror.add(oppPad, oppPeg);
+oppOuter.updateMatrixWorld(true);
+const oppMuscles = new MuscleSystem(oppRig, MUSCLES, time);
+scene.add(oppMuscles.group);
+oppMuscles.captureRest();
+oppOuter.visible = false;
+oppMuscles.group.visible = false;
+const solver = new MatchSolver();
+
 const view = new CameraRig(canvas);
 const overlays = new Overlays(scene, rig, document.getElementById('labels'));
 const infoById = new Map(MUSCLES.map((m) => [m.id, m]));
@@ -80,6 +118,7 @@ const state = {
   forceKg: 15,
   caps: { ...TYPICAL },
   ownCaps: false,
+  match: { on: false, me: 'hook', opp: 'top', grip: 'medium', height: 'even', profile: 'same', result: null },
 };
 
 const ui = createUI({
@@ -88,6 +127,7 @@ const ui = createUI({
   layers: state.layers,
   on: {
     exercise: selectExercise,
+    match: enterMatch,
     view(id) {
       view.go(id);
       ui.setView(id);
@@ -125,6 +165,7 @@ const weak = createWeakPanel({
       telegram.storage.set(CAPS_KEY, JSON.stringify(caps));
       telegram.haptic('success');
       updateWeak();
+      if (state.match.on) solveMatch();
     },
   },
 });
@@ -136,12 +177,88 @@ telegram.storage.get(CAPS_KEY).then((raw) => {
     state.caps = { ...TYPICAL, ...saved };
     state.ownCaps = true;
     weak.setCapacities(state.caps, true);
+    if (state.match.on) solveMatch();
   } catch {
     // A corrupt value just means typical maximums.
   }
 });
 
+const matchPanel = createMatchPanel({
+  techniques: TECHNIQUES,
+  grips: GRIPS,
+  heights: HEIGHTS,
+  profiles: PROFILES,
+  initial: state.match,
+  on: {
+    change(patch) {
+      Object.assign(state.match, patch);
+      solveMatch();
+      telegram.haptic('select');
+    },
+  },
+});
+
+/** The match: both arms locked in a grip, solved by statics (data/match.js). */
+function enterMatch() {
+  state.match.on = true;
+  selectMuscle(null);
+  setWeak(false);
+  ghost.root.visible = false;
+  ui.setMatchMode(true);
+  matchPanel.hidden = false;
+  oppOuter.visible = true;
+  oppMuscles.group.visible = state.layers.muscles;
+  rig.setLayer('gear', false);
+  oppRig.setLayer('gear', false);
+  document.getElementById('now').hidden = true; // the sheet lists both athletes' links instead
+  solveMatch();
+  // Aim at the grip, a little below it so both elbows stay in frame.
+  const c = state.match.result.contact;
+  view.setShift([c.x, c.y - 0.7 - 2.35, c.z + 0.2], 1.3);
+  view.go('side');
+  ui.setView('side');
+  telegram.haptic('select');
+  requestAnimationFrame(layout);
+}
+
+function leaveMatch() {
+  if (!state.match.on) return;
+  state.match.on = false;
+  document.getElementById('now').hidden = false;
+  ui.setMatchMode(false);
+  matchPanel.hidden = true;
+  oppOuter.visible = false;
+  oppMuscles.group.visible = false;
+  rig.setLayer('gear', true);
+  overlays.setMatch(null);
+  ghost.root.visible = state.mode === 'error';
+  ui.setMode(state.mode);
+}
+
+function solveMatch() {
+  const m = state.match;
+  const result = solver.solve({
+    me: m.me,
+    opp: m.opp,
+    grip: m.grip,
+    height: m.height,
+    capsMe: state.caps,
+    capsOpp: profileCaps(m.profile, state.caps),
+  });
+  m.result = result;
+  rig.update(result.poses.meRad);
+  oppOuter.position.copy(result.offset);
+  oppOuter.updateMatrixWorld(true);
+  oppRig.update(result.poses.oppRad);
+  state.acts = activationsFromDemands(result.me, result.poses.me, LEVERAGE);
+  muscles.update(state.acts);
+  oppMuscles.update(activationsFromDemands(result.opp, result.poses.opp, LEVERAGE));
+  overlays.setMatch({ contact: result.contact, fMe: result.efforts.me.F, fOpp: result.efforts.opp.F, oppRig });
+  matchPanel.render(result);
+}
+
 function selectExercise(id) {
+  leaveMatch();
   const index = Math.max(EXERCISES.findIndex((e) => e.id === id), 0);
   const ex = EXERCISES[index];
   state.exercise = ex;
@@ -207,9 +324,14 @@ function setMode(mode) {
 
 function setLayer(id, visible) {
   state.layers[id] = visible;
-  if (id === 'muscles') muscles.group.visible = visible;
-  else if (id === 'vectors') overlays.setVisible(visible);
-  else rig.setLayer(id, visible);
+  if (id === 'muscles') {
+    muscles.group.visible = visible;
+    oppMuscles.group.visible = visible && state.match.on;
+  } else if (id === 'vectors') overlays.setVisible(visible);
+  else {
+    rig.setLayer(id, visible);
+    oppRig.setLayer(id, visible);
+  }
   telegram.haptic('select');
 }
 
@@ -306,12 +428,16 @@ function frame(now) {
   time.value += dt;
 
   const ex = state.exercise;
-  if (state.playing) state.u = (state.u + (dt * state.speed) / ex.duration) % 1;
+  const inMatch = state.match.on;
+  if (state.playing && !inMatch) state.u = (state.u + (dt * state.speed) / ex.duration) % 1;
 
+  // A match is a static lock-up: its poses and muscles are set by solveMatch().
   const { deg, rad } = poseAt(ex, state.u);
-  rig.update(rad);
-  state.acts = activationsAt(ex, state.u, { variant: state.variant, leverage: LEVERAGE });
-  muscles.update(state.acts);
+  if (!inMatch) {
+    rig.update(rad);
+    state.acts = activationsAt(ex, state.u, { variant: state.variant, leverage: LEVERAGE });
+    muscles.update(state.acts);
+  }
 
   const danger = state.mode === 'error' && Boolean(ex.error.danger);
   if (state.mode === 'error') {
@@ -332,7 +458,7 @@ function frame(now) {
   });
 
   const phase = phaseAt(ex, state.u);
-  if (phase !== state.phase) {
+  if (!inMatch && phase !== state.phase) {
     state.phase = phase;
     ui.setPhase(ex, phase);
     // One firm tap at the top of every rep: feel the hold.
@@ -358,7 +484,7 @@ function frame(now) {
 
 // `?debug` exposes the internals in the console.
 if (new URLSearchParams(location.search).has('debug')) {
-  window.armlab = { THREE, rig, ghost, probe, muscles, view, state, renderer, scene };
+  window.armlab = { THREE, rig, ghost, probe, oppRig, solver, muscles, oppMuscles, view, state, renderer, scene };
 }
 
 layout();

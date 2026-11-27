@@ -54,9 +54,10 @@ export class CameraRig {
     if (this.view && !this.tween && !this.userMoved) this.go(this.view.id, true);
   }
 
-  /** An exercise can nudge the framing towards where its movement goes. */
-  setShift(shift = [0, 0, 0]) {
+  /** An exercise can nudge the framing towards where its movement goes; a match pulls back to fit both arms. */
+  setShift(shift = [0, 0, 0], zoom = 1) {
     this.shift = new THREE.Vector3(...shift);
+    this.zoom = zoom;
   }
 
   go(id, instant = false) {
@@ -64,7 +65,7 @@ export class CameraRig {
     this.view = view;
     this.userMoved = false;
     const target = new THREE.Vector3(...view.target).add(this.shift ?? new THREE.Vector3());
-    const position = new THREE.Vector3(...view.dir).normalize().multiplyScalar(view.dist * this.fit).add(target);
+    const position = new THREE.Vector3(...view.dir).normalize().multiplyScalar(view.dist * this.fit * (this.zoom ?? 1)).add(target);
     if (instant) {
       this.camera.position.copy(position);
       this.controls.target.copy(target);

@@ -69,6 +69,24 @@
           <span class="phase__cue" id="phase-cue"></span>
         </div>
 
+        <div class="match" id="match" hidden>
+          <div class="match__grid">
+            <label class="pick"><span>Ты</span><select id="m-me"></select></label>
+            <label class="pick"><span>Соперник</span><select id="m-opp"></select></label>
+            <label class="pick"><span>Хват</span><select id="m-grip"></select></label>
+            <label class="pick"><span>Чья кисть выше</span><select id="m-height"></select></label>
+            <label class="pick pick--wide"><span>Сила соперника</span><select id="m-profile"></select></label>
+          </div>
+          <div class="match__result" aria-live="polite">
+            <p class="match__verdict" id="m-verdict"></p>
+            <p class="match__detail" id="m-detail"></p>
+            <div class="match__cols">
+              <div><p class="match__col">Ты</p><ol class="m-links" id="m-links-me"></ol></div>
+              <div><p class="match__col">Соперник</p><ol class="m-links" id="m-links-opp"></ol></div>
+            </div>
+          </div>
+        </div>
+
         <div class="error-card" id="error-card" hidden>
           <p class="error-card__title" id="error-title"></p>
           <p class="error-card__text" id="error-text"></p>

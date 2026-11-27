@@ -52,6 +52,13 @@ export function createUI({ exercises, views, layers, on }) {
     el.exercises.append(b);
     return b;
   });
+  const matchChip = chip('⚔ Схватка', false);
+  matchChip.classList.add('chip--match');
+  matchChip.addEventListener('click', () => on.match());
+  el.exercises.append(matchChip);
+
+  // Parts of the sheet that belong to a single-arm exercise, not to a match.
+  const exerciseOnly = ['.phase', '.timeline', '#mode', '#weak-open'].map((sel) => el.sheet.querySelector(sel));
 
   const viewChips = views.map((v) => {
     const b = chip(v.label, false);
@@ -96,7 +103,20 @@ export function createUI({ exercises, views, layers, on }) {
   return {
     el,
 
+    /** Switch the sheet between an exercise and the match. */
+    setMatchMode(on) {
+      for (const node of exerciseOnly) node.hidden = on;
+      if (on) {
+        el.variants.hidden = true;
+        el.errorCard.hidden = true;
+      }
+      exerciseChips.forEach((b) => b.setAttribute('aria-pressed', String(false)));
+      matchChip.setAttribute('aria-pressed', String(on));
+      if (on) matchChip.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+    },
+
     setExercise(ex, index) {
+      matchChip.setAttribute('aria-pressed', 'false');
       exerciseChips.forEach((b, i) => b.setAttribute('aria-pressed', String(i === index)));
       exerciseChips[index].scrollIntoView({ inline: 'nearest', block: 'nearest' });
       el.phases.replaceChildren(

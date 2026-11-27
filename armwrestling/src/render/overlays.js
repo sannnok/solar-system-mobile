@@ -74,8 +74,14 @@ export class Overlays {
       elbow: label(labelLayer, 'label'),
       danger: label(labelLayer, 'label label--danger'),
       opponent: label(labelLayer, 'label label--opponent'),
+      oppElbow: label(labelLayer, 'label'),
     };
     this.visible = true;
+    // Match mode: my pull (mint) and the opponent's (amber) from the shared grip.
+    this.mine = makeArrow(FORCE);
+    this.group.add(this.mine);
+    this.mine.visible = false;
+    this.match = null;
     this._a = new THREE.Vector3();
     this._b = new THREE.Vector3();
     this._d = new THREE.Vector3();
@@ -144,8 +150,27 @@ export class Overlays {
     return arc;
   }
 
+  /**
+   * Enter match mode with { contact, fMe, fOpp, oppRig } (world space), or
+   * leave it with null. Exercise visuals are hidden while it lasts.
+   */
+  setMatch(match) {
+    this.match = match;
+    const on = Boolean(match);
+    for (const mesh of [this.cable, this.pulley, this.post, this.resist]) mesh.visible = !on && this.resistDef?.kind === 'cable' && (mesh !== this.resist || this.visible);
+    this.opponent.visible = on ? this.visible : this.visible && this.resistDef?.kind !== 'cable';
+    for (const { arrow } of this.active) arrow.visible = !on && this.visible;
+    this.mine.visible = on && this.visible;
+    if (!on) hide(this.labels.oppElbow);
+  }
+
   setVisible(visible) {
     this.visible = visible;
+    if (this.match) {
+      this.mine.visible = visible;
+      this.opponent.visible = visible;
+      return;
+    }
     const cable = this.resistDef?.kind === 'cable';
     this.resist.visible = visible && cable;
     this.opponent.visible = visible && !cable;
@@ -173,6 +198,26 @@ export class Overlays {
       const x = THREE.MathUtils.clamp(((p.x + 1) / 2) * width, 8, width - w - 14);
       lbl.style.transform = `translate(${x}px, ${((1 - p.y) / 2) * height}px)`;
     };
+    if (this.match) {
+      const m = this.match;
+      const length = 1.1 + 0.15 * Math.sin(performance.now() / 260); // a little tension
+      for (const [arrow, dir] of [[this.mine, m.fMe], [this.opponent, m.fOpp]]) {
+        arrow.position.copy(m.contact);
+        arrow.quaternion.setFromUnitVectors(v3(0, 1, 0), dir);
+        arrow.userData.setLength(length);
+        arrow.userData.material.opacity = 0.9;
+      }
+      for (const lbl of [this.labels.joint, this.labels.danger]) hide(lbl);
+      if (this.visible) {
+        show(this.labels.opponent, b.copy(m.contact).addScaledVector(m.fOpp, length + 0.2), 'Соперник');
+      } else hide(this.labels.opponent);
+      const mine = Math.round(THREE.MathUtils.radToDeg(rig.elbowAngle()));
+      show(this.labels.elbow, rig.forearm.localToWorld(b.set(0.55, -0.1, 0.3)), `Ты · локоть ${mine}°`);
+      const theirs = Math.round(THREE.MathUtils.radToDeg(m.oppRig.elbowAngle()));
+      show(this.labels.oppElbow, m.oppRig.forearm.localToWorld(b.set(0.55, -0.1, 0.3)), `Соперник · локоть ${theirs}°`);
+      return;
+    }
+
     const r = this.resistDef;
     if (r.kind === 'cable') {
       // Cable from the handle to the pulley; resistance arrow along it.
