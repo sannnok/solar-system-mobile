@@ -85,8 +85,14 @@ const _m = new THREE.Matrix4();
 const _v = new THREE.Vector3();
 
 export class Rig {
-  constructor({ ghost = false } = {}) {
+  /**
+   * `ghost` builds the red error overlay (arm only). `probe` builds frames and
+   * nothing else — a cheap rig for mechanics calculations that can be posed
+   * many times a frame without touching any geometry.
+   */
+  constructor({ ghost = false, probe = false } = {}) {
     this.ghost = ghost;
+    this.probe = probe;
     this.root = new THREE.Group();
     this.upper = new THREE.Group();
     this.upper.position.copy(SHOULDER);
@@ -103,6 +109,12 @@ export class Rig {
 
     this.layers = { bones: [], skin: [], gear: [] };
     this.pron = 0;
+    this.fingers = [];
+
+    if (probe) {
+      this.update({ pron: 0, flex: 0, dev: 0, elbow: 0, ir: 0, grip: 0.95 });
+      return;
+    }
 
     if (ghost) {
       const red = 0xff3d5a;
@@ -148,7 +160,7 @@ export class Rig {
     this.root.updateMatrixWorld(true);
     if (p.pron !== this.pron) {
       this.pron = p.pron;
-      this.#twistForearmSkin();
+      if (this.forearmSkin) this.#twistForearmSkin();
     }
   }
 
@@ -194,6 +206,26 @@ export class Rig {
         return target.transformDirection(this.distal.matrixWorld);
       default:
         return target.transformDirection(this.hand.matrixWorld);
+    }
+  }
+
+  /** A direction given in one of the rig's frames (rig space for 'T'), in world space. */
+  directionToWorld(frame, local, dir, target) {
+    target.copy(dir);
+    switch (frame) {
+      case 'H':
+        return target.transformDirection(this.upper.matrixWorld);
+      case 'U':
+        return target.transformDirection(this.forearm.matrixWorld);
+      case 'S':
+        target.applyAxisAngle(PRON_AXIS, this.pron * twistShare(local.y));
+        return target.transformDirection(this.forearm.matrixWorld);
+      case 'R':
+        return target.transformDirection(this.distal.matrixWorld);
+      case 'M':
+        return target.transformDirection(this.hand.matrixWorld);
+      default:
+        return target.transformDirection(this.root.matrixWorld);
     }
   }
 

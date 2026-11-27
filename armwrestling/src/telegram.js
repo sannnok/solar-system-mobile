@@ -81,4 +81,31 @@ export const telegram = {
   on(event, handler) {
     if (inside) tg.onEvent(event, handler);
   },
+
+  /**
+   * Small per-user settings. Inside Telegram they go to CloudStorage, so they
+   * follow the user across devices; in a browser, localStorage — which may be
+   * unavailable (private mode), so every call degrades to "nothing stored".
+   */
+  storage: {
+    get(key) {
+      if (atLeast('6.9')) {
+        return new Promise((resolve) => tg.CloudStorage.getItem(key, (error, value) => resolve(error ? null : value || null)));
+      }
+      try {
+        return Promise.resolve(window.localStorage.getItem(key));
+      } catch {
+        return Promise.resolve(null);
+      }
+    },
+    set(key, value) {
+      if (atLeast('6.9')) return new Promise((resolve) => tg.CloudStorage.setItem(key, value, () => resolve()));
+      try {
+        window.localStorage.setItem(key, value);
+      } catch {
+        // Nothing to do: the value simply is not kept.
+      }
+      return Promise.resolve();
+    },
+  },
 };

@@ -288,10 +288,17 @@ button {
   right: var(--gutter);
   top: var(--now-top, 120px);
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
   font-size: 11px;
   color: var(--muted);
+}
+
+.legend__scale {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .legend i {
@@ -674,4 +681,164 @@ button {
   .chip {
     transition: none;
   }
+}
+
+/* ── resistance variants, weak link ────────────────────────────────────── */
+
+.seg--variants {
+  grid-template-columns: repeat(var(--n, 3), 1fr);
+  margin-top: 8px;
+}
+
+.seg--variants button[aria-checked='true'] {
+  background: rgba(255, 160, 77, 0.18);
+  color: #ffd2a8;
+}
+
+.chip--accent {
+  background: rgba(60, 242, 192, 0.14);
+  border-color: rgba(60, 242, 192, 0.5);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.label--opponent {
+  color: #ffd2a8;
+  border-color: rgba(255, 160, 77, 0.5);
+}
+
+.weak__verdict {
+  margin: 0 0 12px !important;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(60, 242, 192, 0.1);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.weak__verdict.is-over {
+  background: rgba(255, 77, 100, 0.14);
+  color: #ffb3bf;
+}
+
+.weak__force {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.weak__force input {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.weak__force output {
+  min-width: 44px;
+  text-align: right;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.weak__list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.weak__row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3px 8px;
+  font-size: 13px;
+}
+
+.weak__val {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+.weak__bar {
+  grid-column: 1 / -1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+.weak__bar i {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--cold), var(--warm));
+}
+
+.weak__row.is-top .weak__name {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.weak__row.is-over .weak__bar i {
+  background: linear-gradient(90deg, var(--warm), var(--hot));
+}
+
+.weak__source,
+.weak__hint {
+  margin: 12px 0 8px !important;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.weak__form {
+  margin-top: 10px;
+}
+
+.weak__fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 10px;
+}
+
+.weak__field {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.weak__field span {
+  grid-column: 1 / -1;
+}
+
+.weak__field input {
+  width: 100%;
+  min-width: 0;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.weak__field small {
+  align-self: center;
+}
+
+.weak__buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.card__note--plain {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
 }

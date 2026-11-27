@@ -1,6 +1,7 @@
 /**
  * What the eye can't see on a real arm: the athlete's force (mint), the
- * resistance from the cable (grey), and live joint-angle readouts.
+ * resistance — a cable (grey) or the opponent's pull (amber) — and live
+ * joint-angle readouts.
  *
  * Arrows ignore depth so they stay readable through muscle and skin.
  */
@@ -11,6 +12,7 @@ import { placeBetween, v3 } from './shapes.js';
 
 const FORCE = 0x3cf2c0;
 const RESIST = 0xb8c4d2;
+const OPPONENT = 0xffa04d;
 
 function arrowMaterial(color) {
   return new THREE.MeshBasicMaterial({ color, transparent: true, depthTest: false, depthWrite: false });
@@ -55,7 +57,8 @@ export class Overlays {
     scene.add(this.group);
 
     this.resist = makeArrow(RESIST);
-    this.group.add(this.resist);
+    this.opponent = makeArrow(OPPONENT);
+    this.group.add(this.resist, this.opponent);
     this.linears = []; // pool of athlete-force arrows
     this.arcs = new Map();
     this.active = []; // [{ def, arrow }] for the current exercise
@@ -70,6 +73,7 @@ export class Overlays {
       joint: label(labelLayer, 'label label--joint'),
       elbow: label(labelLayer, 'label'),
       danger: label(labelLayer, 'label label--danger'),
+      opponent: label(labelLayer, 'label label--opponent'),
     };
     this.visible = true;
     this._a = new THREE.Vector3();
@@ -77,8 +81,9 @@ export class Overlays {
     this._d = new THREE.Vector3();
   }
 
-  configure(exercise) {
+  configure(exercise, variant) {
     this.exercise = exercise;
+    this.resistDef = variant.resist;
     for (const arrow of [...this.linears, ...this.arcs.values()]) arrow.visible = false;
 
     // An exercise has one athlete force (`force`) or several (`forces`).
@@ -95,13 +100,20 @@ export class Overlays {
     });
     for (const { arrow } of this.active) arrow.visible = this.visible;
 
-    // Anchors are in rig space; the rig root may be mirrored.
-    const anchor = this.rig.root.localToWorld(v3(...exercise.cable.anchor));
-    this.anchor = anchor;
-    this.pulley.position.copy(anchor);
-    this.pulley.lookAt(0, anchor.y, 0);
-    this.post.position.set(anchor.x, 0, anchor.z);
-    this.post.scale.set(1, Math.max(anchor.y - 0.18, 0.01), 1);
+    // A cable needs its pulley; an opponent's pull is just an arrow at the grip.
+    const cable = this.resistDef.kind === 'cable';
+    for (const mesh of [this.cable, this.pulley, this.post]) mesh.visible = cable;
+    this.resist.visible = cable && this.visible;
+    this.opponent.visible = !cable && this.visible;
+    if (cable) {
+      // Anchors are in rig space; the rig root may be mirrored.
+      const anchor = this.rig.root.localToWorld(v3(...this.resistDef.anchor));
+      this.anchor = anchor;
+      this.pulley.position.copy(anchor);
+      this.pulley.lookAt(0, anchor.y, 0);
+      this.post.position.set(anchor.x, 0, anchor.z);
+      this.post.scale.set(1, Math.max(anchor.y - 0.18, 0.01), 1);
+    }
   }
 
   /**
@@ -134,7 +146,9 @@ export class Overlays {
 
   setVisible(visible) {
     this.visible = visible;
-    this.resist.visible = visible;
+    const cable = this.resistDef?.kind === 'cable';
+    this.resist.visible = visible && cable;
+    this.opponent.visible = visible && !cable;
     for (const { arrow } of this.active) arrow.visible = visible;
   }
 
@@ -144,15 +158,45 @@ export class Overlays {
     const { _a: a, _b: b, _d: d } = this;
     const strength = 0.3 + 0.7 * effort;
 
-    // Cable from the handle to the pulley; resistance arrow along it.
-    rig.hand.localToWorld(a.copy(HANDLE[ex.cable.attach]));
-    placeBetween(this.cable, a, this.anchor);
-    this.cable.scale.y = a.distanceTo(this.anchor);
-    d.subVectors(this.anchor, a).normalize();
-    this.resist.position.copy(a);
-    this.resist.quaternion.setFromUnitVectors(v3(0, 1, 0), d);
-    this.resist.userData.setLength(0.5 + 0.5 * effort);
-    this.resist.userData.material.opacity = 0.55;
+    // Screen-space labels.
+    const show = (lbl, world, text) => {
+      if (!text) return hide(lbl);
+      const p = world.clone().project(camera);
+      if (p.z > 1) return hide(lbl);
+      lbl.hidden = false;
+      if (lbl.textContent !== text) {
+        lbl.textContent = text;
+        lbl.dataset.w = String(lbl.offsetWidth);
+      }
+      // Keep labels on screen: near an edge they slide in rather than clip.
+      const w = Number(lbl.dataset.w) || 0;
+      const x = THREE.MathUtils.clamp(((p.x + 1) / 2) * width, 8, width - w - 14);
+      lbl.style.transform = `translate(${x}px, ${((1 - p.y) / 2) * height}px)`;
+    };
+    const r = this.resistDef;
+    if (r.kind === 'cable') {
+      // Cable from the handle to the pulley; resistance arrow along it.
+      rig.hand.localToWorld(a.copy(HANDLE[r.attach]));
+      placeBetween(this.cable, a, this.anchor);
+      this.cable.scale.y = a.distanceTo(this.anchor);
+      d.subVectors(this.anchor, a).normalize();
+      this.resist.position.copy(a);
+      this.resist.quaternion.setFromUnitVectors(v3(0, 1, 0), d);
+      this.resist.userData.setLength(0.5 + 0.5 * effort);
+      this.resist.userData.material.opacity = 0.55;
+      hide(this.labels.opponent);
+    } else {
+      // The opponent's pull, from the point where his hand grips yours.
+      rig.hand.localToWorld(a.copy(v3(...r.at)));
+      d.set(...r.dir).transformDirection(rig.root.matrixWorld);
+      const length = 0.7 + 0.7 * effort;
+      this.opponent.position.copy(a);
+      this.opponent.quaternion.setFromUnitVectors(v3(0, 1, 0), d);
+      this.opponent.userData.setLength(length);
+      this.opponent.userData.material.opacity = 0.85;
+      if (this.visible) show(this.labels.opponent, b.copy(a).addScaledVector(d, length + 0.15), 'Соперник');
+      else hide(this.labels.opponent);
+    }
 
     for (const { def: f, arrow } of this.active) {
       if (f.kind === 'linear') {
@@ -170,21 +214,6 @@ export class Overlays {
       arrow.userData.material.opacity = strength;
     }
 
-    // Readouts.
-    const show = (lbl, world, text) => {
-      if (!text) return hide(lbl);
-      const p = world.clone().project(camera);
-      if (p.z > 1) return hide(lbl);
-      lbl.hidden = false;
-      if (lbl.textContent !== text) {
-        lbl.textContent = text;
-        lbl.dataset.w = String(lbl.offsetWidth);
-      }
-      // Keep labels on screen: near an edge they slide in rather than clip.
-      const w = Number(lbl.dataset.w) || 0;
-      const x = THREE.MathUtils.clamp(((p.x + 1) / 2) * width, 8, width - w - 14);
-      lbl.style.transform = `translate(${x}px, ${((1 - p.y) / 2) * height}px)`;
-    };
     show(this.labels.joint, rig.hand.localToWorld(b.set(0.45, 0.3, 0)), ex.readout(pose));
     const elbow = Math.round(THREE.MathUtils.radToDeg(rig.elbowAngle()));
     show(this.labels.elbow, rig.forearm.localToWorld(b.set(0.55, -0.1, 0.3)), `Локоть ${elbow}°`);

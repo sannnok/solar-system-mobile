@@ -12,6 +12,13 @@
  *
  * Every rep has the same rhythm: set-up, concentric, hold at the top, slow
  * eccentric, pause. `progress` and `effort` below encode it.
+ *
+ * Resistance comes in `variants`: a cable to a pulley ({ kind: 'cable',
+ * attach, anchor }) or an opponent's pull ({ kind: 'opponent', at, dir } —
+ * a hand-local contact point and a rig-space direction). An exercise with only
+ * `cable` gets a single "Блок" variant. A variant may bring its own `weights`,
+ * because who works depends on what resists. `npm run check:armlab` verifies
+ * every variant against the rig by virtual work.
  */
 
 const DEFAULT_POSE = { pron: 0, flex: 0, dev: 0, elbow: 0, ir: 0, grip: 0.95 };
@@ -54,12 +61,24 @@ export function poseAt(exercise, u, variant = 'technique') {
   return { deg, rad };
 }
 
-export function activationsAt(exercise, u) {
+/**
+ * Effort of each muscle as a share of its own maximum. `leverage` maps a muscle
+ * id to a function of the pose (degrees) for muscles whose mechanical
+ * advantage depends on the angle — brachioradialis fades in deep supination.
+ */
+export function activationsAt(exercise, u, { variant, leverage = {} } = {}) {
   const e = effort(u);
+  const pose = poseAt(exercise, u).deg;
   const out = {};
-  for (const [id, w] of Object.entries(exercise.weights)) out[id] = Math.min(1, 0.04 + w * e);
+  for (const [id, w] of Object.entries(weightsOf(exercise, variant))) {
+    const gain = leverage[id] ? leverage[id](pose) : 1;
+    out[id] = Math.min(1, 0.04 + w * e * gain);
+  }
   return out;
 }
+
+export const weightsOf = (exercise, variant) => variant?.weights ?? exercise.weights;
+export const variantOf = (exercise, id) => exercise.variants.find((v) => v.id === id) ?? exercise.variants[0];
 
 export function phaseAt(exercise, u) {
   let index = 0;
@@ -89,6 +108,7 @@ export const EXERCISES = [
       ecrl: 1, ecrb: 0.9, fcr: 0.75, apl: 0.7, brachioradialis: 0.55, fds: 0.6, ed: 0.2, fcu: 0.15,
       ecu: 0.1, biceps: 0.25, brachialis: 0.3, pronatorTeres: 0.15, pronatorQuadratus: 0.1,
       supinator: 0.1, triceps: 0.1, delt: 0.1, deltMid: 0.08, pec: 0.1, lat: 0.08,
+      fdp: 0.6, subscapularis: 0.3, teresMajor: 0.15, infraspinatus: 0.15,
     },
     cable: { attach: 'ulnarEnd', anchor: [0.1, 0.5, 4.6] },
     force: { kind: 'linear', frame: 'hand', at: 'center', dir: [0, 0.25, -1] },
@@ -117,8 +137,9 @@ export const EXERCISES = [
     readout: (p) => signed(p.pron, 'Пронация', 'Супинация'),
     weights: {
       pronatorTeres: 1, pronatorQuadratus: 0.9, fcr: 0.55, brachioradialis: 0.45, fds: 0.6, fcu: 0.4,
-      ecrl: 0.45, ecrb: 0.3, apl: 0.25, biceps: 0.15, supinator: 0.08, brachialis: 0.4, triceps: 0.15,
-      delt: 0.15, deltMid: 0.1, pec: 0.2, lat: 0.15, ed: 0.15, ecu: 0.15,
+      ecrl: 0.45, ecrb: 0.3, apl: 0.25, biceps: 0.15, supinator: 0.08, brachialis: 0.4, triceps: 0.4,
+      delt: 0.15, deltMid: 0.1, pec: 0.35, lat: 0.15, ed: 0.15, ecu: 0.15,
+      fdp: 0.6, subscapularis: 0.4, teresMajor: 0.25, infraspinatus: 0.15,
     },
     cable: { attach: 'radialEnd', anchor: [2.4, 3.4, -1.8] },
     force: { kind: 'arc', about: 'pronation', height: 1.75, sign: 1, radius: 0.78 },
@@ -148,7 +169,8 @@ export const EXERCISES = [
     weights: {
       fcu: 1, fcr: 0.9, fds: 0.95, pronatorTeres: 0.3, pronatorQuadratus: 0.2, brachioradialis: 0.25,
       ecrl: 0.15, ecrb: 0.15, ed: 0.12, ecu: 0.1, apl: 0.15, biceps: 0.3, brachialis: 0.35,
-      supinator: 0.1, triceps: 0.1, delt: 0.1, deltMid: 0.08, pec: 0.1, lat: 0.1,
+      supinator: 0.1, triceps: 0.1, delt: 0.2, deltMid: 0.08, pec: 0.4, lat: 0.25,
+      fdp: 0.95, subscapularis: 0.45, teresMajor: 0.3, infraspinatus: 0.15,
     },
     cable: { attach: 'center', anchor: [3.6, 2.2, 0.4] },
     force: { kind: 'arc', frame: 'distal', at: [0, 2.62, 0], axis: [0, 0, 1], sign: 1, radius: 0.85, start: 1.0 },
@@ -167,48 +189,76 @@ export const EXERCISES = [
     },
   },
   {
-    // Table hook against a cable from the opponent's side. The cable does what
-    // an opponent does to a hook: pulls the hand away and outwards, opening the
-    // wrist and the elbow and turning the forearm into pronation. So everything
-    // that holds a hook works: biceps and brachialis keep the elbow closed,
-    // biceps and supinator keep the palm turned in, the wrist flexors keep the
-    // cup, pec, lat and front delt pull towards yourself and towards the pad.
+    // The hook against three resistances. Each pulls the hand away from the
+    // athlete — opening the wrist and the elbow, tipping the hand towards the
+    // little finger — and checked by virtual work, each resists all four moves
+    // of the hook: supinate, cup, close the elbow, press to the pad.
+    // What differs is where the load lands, so each brings its own weights:
+    //   против крюка  palm to palm, pulled back and to his side → elbow and shoulder
+    //   против верха  he climbs over the fingers, back and up → wrist and supination
+    //   блок          a cable on the little-finger end of the handle → supination
+    // In every case the weakest link is the radial side of the wrist: the pull
+    // tips the hand over a 7–12 cm lever and the radial deviators are small.
     id: 'hook',
     chip: 'Крюк',
-    title: 'Крюк на блоке',
+    title: 'Крюк',
     duration: 4.6,
     camera: 'side',
     from: { pron: 5, flex: 2, elbow: -8, ir: -6 },
     to: { pron: -35, flex: 32, elbow: 12, ir: 10, dev: 4 },
     readout: (p) => `${signed(-p.pron, 'Супинация', 'Пронация')} · сгиб ${Math.round(p.flex)}°`,
-    weights: {
-      biceps: 1, brachialis: 0.85, supinator: 0.65, brachioradialis: 0.55, fcu: 0.75, fds: 0.85, fcr: 0.55,
-      pec: 0.8, lat: 0.75, delt: 0.5, deltMid: 0.2, triceps: 0.15, pronatorTeres: 0.08,
-      // The cable also tips the hand towards the little finger; the radial side holds it up.
-      pronatorQuadratus: 0.08, ecrl: 0.45, ecrb: 0.3, ecu: 0.2, ed: 0.12, apl: 0.25,
-    },
-    // Pulley on a post at the far end of the table, a little outside; the cable
-    // takes the little-finger end of the handle. Checked by virtual work: it
-    // resists supination, cupping, closing the elbow and side pressure alike.
-    // Elbow and shoulder still carry the most (the forearm is a 26 cm lever,
-    // the handle sits 6 cm off the rotation axis) — that is the hook.
-    cable: { attach: 'ulnarEnd', anchor: [1.4, 2.5, 5.2] },
+    variants: [
+      {
+        id: 'vsHook',
+        label: 'Против крюка',
+        resist: { kind: 'opponent', at: [-0.14, 0.75, 0], dir: [0.3, -0.3, 1] },
+        weights: {
+          biceps: 1, brachialis: 0.9, brachioradialis: 0.6, supinator: 0.35, pec: 0.95, lat: 0.85,
+          subscapularis: 0.85, teresMajor: 0.8, delt: 0.6, deltMid: 0.25, infraspinatus: 0.3, triceps: 0.2,
+          fcu: 0.7, fcr: 0.6, fds: 0.75, fdp: 0.85, ecrl: 0.75, ecrb: 0.55, apl: 0.45, ecu: 0.2, ed: 0.12,
+          pronatorTeres: 0.1, pronatorQuadratus: 0.08,
+        },
+      },
+      {
+        id: 'vsTop',
+        label: 'Против верха',
+        resist: { kind: 'opponent', at: [-0.47, 0.95, 0], dir: [0.1, 0.5, 1] },
+        weights: {
+          fcu: 1, fdp: 1, fds: 0.9, fcr: 0.75, ecrl: 0.8, ecrb: 0.55, apl: 0.45, biceps: 1, supinator: 0.55,
+          brachialis: 0.8, brachioradialis: 0.5, pec: 0.6, lat: 0.6, subscapularis: 0.55, teresMajor: 0.5,
+          delt: 0.4, deltMid: 0.2, infraspinatus: 0.25, triceps: 0.15, ecu: 0.25, ed: 0.12,
+          pronatorTeres: 0.08, pronatorQuadratus: 0.08,
+        },
+      },
+      {
+        id: 'cable',
+        label: 'Блок',
+        // Pulley on a post at the far end of the table, a little outside.
+        resist: { kind: 'cable', attach: 'ulnarEnd', anchor: [1.4, 2.5, 5.2] },
+        weights: {
+          biceps: 1, brachialis: 0.85, supinator: 0.45, brachioradialis: 0.55, fcu: 0.75, fds: 0.85, fdp: 0.85,
+          fcr: 0.6, pec: 0.8, lat: 0.75, subscapularis: 0.65, teresMajor: 0.6, delt: 0.5, deltMid: 0.2,
+          infraspinatus: 0.25, triceps: 0.15, ecrl: 0.7, ecrb: 0.5, apl: 0.4, ecu: 0.2, ed: 0.12,
+          pronatorTeres: 0.08, pronatorQuadratus: 0.08,
+        },
+      },
+    ],
     forces: [
       // The hook's main vector: towards yourself and towards the pad.
       { kind: 'linear', frame: 'hand', at: 'center', dir: [-0.45, 0.05, -1], world: true },
-      // Keeping the palm turned in against the cable's pronating pull.
+      // Keeping the palm turned in against the pull into pronation.
       { kind: 'arc', about: 'pronation', height: 1.6, sign: -1, radius: 0.72 },
     ],
     phases: phases([
-      { name: 'Старт', cue: 'Трос тянет к сопернику: кисть выпрямлена, локоть приоткрыт' },
+      { name: 'Старт', cue: 'Тебя тянут к сопернику: кисть выпрямлена, локоть приоткрыт' },
       { name: 'Крюк', cue: 'Подкручивай кисть, ладонь к себе, тяни на себя и к подушке' },
-      { name: 'Пик', cue: 'Кисть подкручена, угол в локте острый. Задержка' },
+      { name: 'Пик', cue: 'Кисть подкручена и не падает к мизинцу, угол в локте острый' },
       { name: 'Негатив', cue: 'Отдавай медленно: капинг и угол в локте не теряй' },
       { name: 'Пауза', cue: 'Плечо держи за рукой' },
     ]),
     error: {
       title: 'Крюк без капинга',
-      text: 'Ладонь развёрнута к себе, но кисть разогнута: трос, как и соперник, держит её за пальцы и раскрывает. Бицепс работает, а рычага нет — соперник выпрямляет тебе запястье и уходит в верх.',
+      text: 'Ладонь развёрнута к себе, но кисть разогнута: соперник держит её за пальцы и раскрывает. Бицепс работает, а рычага нет — соперник выпрямляет тебе запястье и уходит в верх.',
       risk: 'Перегруз сухожилия бицепса и связок запястья',
       to: { pron: -35, flex: -14, elbow: 2, ir: 2 },
     },
@@ -227,6 +277,7 @@ export const EXERCISES = [
       pec: 1, delt: 0.8, lat: 0.6, biceps: 0.6, brachialis: 0.6, triceps: 0.3, deltMid: 0.3, fcu: 0.5,
       fds: 0.65, fcr: 0.35, pronatorTeres: 0.45, brachioradialis: 0.45, supinator: 0.2,
       pronatorQuadratus: 0.2, ecrl: 0.2, ecrb: 0.15, apl: 0.1, ed: 0.1, ecu: 0.15,
+      subscapularis: 0.85, teresMajor: 0.7, infraspinatus: 0.3, fdp: 0.65,
     },
     cable: { attach: 'center', anchor: [3.8, 3.2, 0.2] },
     force: { kind: 'linear', frame: 'hand', at: 'center', dir: [-1, 0, 0.1], world: true },
@@ -246,3 +297,8 @@ export const EXERCISES = [
     },
   },
 ];
+
+// An exercise with a single cable gets it as its only resistance variant.
+for (const ex of EXERCISES) {
+  ex.variants ??= [{ id: 'cable', label: 'Блок', resist: { kind: 'cable', ...ex.cable } }];
+}

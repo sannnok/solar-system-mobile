@@ -34,6 +34,7 @@ export function createUI({ exercises, views, layers, on }) {
     play: $('play'),
     speed: $('speed'),
     mode: $('mode'),
+    variants: $('variants'),
     errorCard: $('error-card'),
     errorTitle: $('error-title'),
     errorText: $('error-text'),
@@ -87,6 +88,7 @@ export function createUI({ exercises, views, layers, on }) {
   }
 
   $('card-close').addEventListener('click', () => on.closeMuscle());
+  $('weak-open').addEventListener('click', () => on.weak());
   el.fullscreen.addEventListener('click', () => on.fullscreen());
 
   let nowKey = '';
@@ -133,6 +135,28 @@ export function createUI({ exercises, views, layers, on }) {
       el.play.setAttribute('aria-label', playing ? 'Пауза' : 'Воспроизвести');
     },
 
+    /** What resists: a segmented switch, shown only when there is a choice. */
+    setVariants(variants, activeId) {
+      el.variants.hidden = variants.length < 2;
+      el.variants.style.setProperty('--n', String(variants.length));
+      el.variants.replaceChildren(
+        ...variants.map((v) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.setAttribute('role', 'radio');
+          b.dataset.variant = v.id;
+          b.textContent = v.label;
+          b.setAttribute('aria-checked', String(v.id === activeId));
+          b.addEventListener('click', () => on.variant(v.id));
+          return b;
+        }),
+      );
+    },
+
+    setVariant(activeId) {
+      for (const b of el.variants.children) b.setAttribute('aria-checked', String(b.dataset.variant === activeId));
+    },
+
     setMode(mode) {
       for (const button of el.mode.querySelectorAll('button')) {
         button.setAttribute('aria-checked', String(button.dataset.mode === mode));
@@ -177,7 +201,7 @@ export function createUI({ exercises, views, layers, on }) {
     setMuscleLoad(value) {
       const pct = Math.round(value * 100);
       $('card-meter').style.setProperty('--v', `${pct}%`);
-      $('card-pct').textContent = `Нагрузка сейчас: ${pct}%`;
+      $('card-pct').textContent = `Усилие сейчас: ${pct}% от максимума этой мышцы`;
     },
 
     closeMuscle() {
@@ -188,7 +212,10 @@ export function createUI({ exercises, views, layers, on }) {
     covers() {
       const h = window.innerHeight;
       const sheetTop = el.sheet.getBoundingClientRect().top;
-      return { top: el.top.getBoundingClientRect().bottom, bottom: Math.max(h - sheetTop, 0) };
+      const header = el.top.getBoundingClientRect().bottom;
+      // The live-muscles panel sits just under the header; keep the arm below it.
+      const panel = $('now').offsetHeight;
+      return { header, top: header + 2 + panel, bottom: Math.max(h - sheetTop, 0) };
     },
   };
 }

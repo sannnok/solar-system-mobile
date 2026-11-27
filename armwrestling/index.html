@@ -54,12 +54,13 @@
       </header>
 
       <aside class="now" id="now" aria-label="Мышцы, которые сейчас работают">
-        <p class="now__title">Сейчас работают</p>
+        <p class="now__title">Усилие мышц</p>
         <ol class="now__list" id="now-list"></ol>
       </aside>
 
       <div class="legend" aria-hidden="true">
-        <span>0</span><i></i><span>100%</span>
+        <span class="legend__scale"><span>0</span><i></i><span>100%</span></span>
+        <span class="legend__caption">от максимума мышцы</span>
       </div>
 
       <section class="sheet" id="sheet" aria-label="Управление">
@@ -91,7 +92,11 @@
           <button type="button" role="radio" data-mode="error" aria-checked="false">Типичная ошибка</button>
         </div>
 
+        <div class="seg seg--variants" id="variants" role="radiogroup" aria-label="Сопротивление" hidden></div>
+
         <div class="chips chips--scroll chips--small" id="toolbar">
+          <button class="chip chip--accent" id="weak-open" type="button">Слабое звено</button>
+          <span class="chips__sep" aria-hidden="true"></span>
           <span class="chips__label">Вид</span>
           <span class="chips__group" id="views"></span>
           <span class="chips__sep" aria-hidden="true"></span>
@@ -113,6 +118,35 @@
         <p class="card__label">Как тренировать</p>
         <p class="card__text" id="card-train"></p>
         <p class="card__note" id="card-note" hidden></p>
+      </section>
+
+      <section class="card" id="weak-card" aria-labelledby="weak-title" hidden>
+        <button class="card__close" id="weak-close" type="button" aria-label="Закрыть">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" /></svg>
+        </button>
+        <p class="card__latin" id="weak-context"></p>
+        <h2 class="card__name" id="weak-title">Слабое звено</h2>
+        <p class="weak__verdict" id="weak-verdict" aria-live="polite"></p>
+        <label class="weak__force">
+          <span id="weak-force-label">Сила соперника</span>
+          <input id="weak-force" type="range" min="5" max="60" step="1" value="15" />
+          <output id="weak-force-out">15 кг</output>
+        </label>
+        <ol class="weak__list" id="weak-list"></ol>
+        <p class="weak__source" id="weak-source"></p>
+        <button class="chip" id="weak-edit" type="button">Мои максимумы</button>
+        <form class="weak__form" id="weak-form" hidden>
+          <div class="weak__fields" id="weak-fields"></div>
+          <p class="weak__hint">Из теста на динамометре или с рукоятью: вес (кг) × 9,8 × плечо (м). Например, 6 кг на рукояти в 20 см от запястья — это 6 × 9,8 × 0,2 ≈ 12 Н·м.</p>
+          <div class="weak__buttons">
+            <button class="chip" id="weak-reset" type="button">Типичные</button>
+            <button class="chip chip--accent" type="submit">Сохранить</button>
+          </div>
+        </form>
+        <p class="card__note card__note--plain">
+          Момент силы на каждом суставе против максимума этого движения — по механике модели в текущей фазе
+          повтора. Корпус и совместная работа мышц не учитываются: это оценка, где цепь рвётся первой.
+        </p>
       </section>
     </div>
     <script type="module" src="./src/main.js"></script>

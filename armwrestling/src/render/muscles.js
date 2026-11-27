@@ -58,7 +58,12 @@ class Muscle {
     this.activation = 0;
     this.restLength = null;
 
-    this.points = def.pts.map(([frame, p]) => ({ frame, local: new THREE.Vector3(...p) }));
+    // A point may carry an explicit outward direction as a third element.
+    this.points = def.pts.map(([frame, p, out]) => ({
+      frame,
+      local: new THREE.Vector3(...p),
+      out: out ? new THREE.Vector3(...out).normalize() : null,
+    }));
     this.P = this.points.map(() => new THREE.Vector3());
     this.O = this.points.map(() => new THREE.Vector3());
     this.chord = new Float32Array(this.points.length);
@@ -116,7 +121,9 @@ class Muscle {
 
     for (let k = 0; k < n; k++) {
       rig.pointToWorld(points[k].frame, points[k].local, P[k]);
-      rig.outwardToWorld(points[k].frame, points[k].local, O[k]);
+      const pt = points[k];
+      if (pt.out) rig.directionToWorld(pt.frame, pt.local, pt.out, O[k]);
+      else rig.outwardToWorld(pt.frame, pt.local, O[k]);
     }
     chord[0] = 0;
     for (let k = 1; k < n; k++) chord[k] = chord[k - 1] + P[k].distanceTo(P[k - 1]);

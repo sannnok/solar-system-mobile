@@ -3,13 +3,17 @@
  * Mini App (and in any browser).
  *
  * Each frame: advance the rep clock → pose the arm → resolve muscle tubes and
- * their activation → draw force vectors and joint readouts → render.
+ * their activation → draw force vectors and joint readouts → render. With the
+ * weak-link sheet open, a frameless probe rig also works out the torque on
+ * every joint against the athlete's maximums a few times a second.
  */
 
 import * as THREE from 'three';
 
 import { MUSCLES } from './data/anatomy.js';
-import { EXERCISES, activationsAt, effort, phaseAt, poseAt } from './data/exercises.js';
+import { EXERCISES, activationsAt, effort, phaseAt, poseAt, variantOf } from './data/exercises.js';
+import { jointDemands } from './data/mechanics.js';
+import { ACTIONS, TYPICAL } from './data/strength.js';
 import { CameraRig, VIEWS } from './render/camera.js';
 import { MuscleSystem } from './render/muscles.js';
 import { Overlays } from './render/overlays.js';
@@ -17,9 +21,12 @@ import { Rig } from './render/rig.js';
 import { createStage } from './render/stage.js';
 import { telegram } from './telegram.js';
 import { createUI } from './ui.js';
+import { createWeakPanel } from './weak.js';
 
 const BACKGROUND = '#070b12';
 const PEAK_PHASE = 2;
+const G = 9.81;
+const CAPS_KEY = 'armlab.capacities';
 
 telegram.init(BACKGROUND);
 
@@ -54,6 +61,8 @@ muscles.captureRest();
 const view = new CameraRig(canvas);
 const overlays = new Overlays(scene, rig, document.getElementById('labels'));
 const infoById = new Map(MUSCLES.map((m) => [m.id, m]));
+const LEVERAGE = Object.fromEntries(MUSCLES.filter((m) => m.leverage).map((m) => [m.id, m.leverage]));
+const probe = new Rig({ probe: true });
 
 // ── state & UI ─────────────────────────────────────────────────────────────
 
@@ -67,6 +76,10 @@ const state = {
   selected: null,
   phase: -1,
   acts: {},
+  variant: EXERCISES[0].variants[0],
+  forceKg: 15,
+  caps: { ...TYPICAL },
+  ownCaps: false,
 };
 
 const ui = createUI({
@@ -88,9 +101,44 @@ const ui = createUI({
       state.u = u;
     },
     mode: setMode,
+    variant: selectVariant,
+    weak: () => setWeak(!weak.open),
     closeMuscle: () => selectMuscle(null),
     fullscreen: () => telegram.toggleFullscreen(),
   },
+});
+
+const weak = createWeakPanel({
+  actions: ACTIONS,
+  typical: TYPICAL,
+  on: {
+    close: () => setWeak(false),
+    force(kg) {
+      state.forceKg = kg;
+      weak.setForce(kg, state.variant.resist.kind === 'cable');
+      updateWeak();
+    },
+    save(caps) {
+      state.caps = caps;
+      state.ownCaps = true;
+      weak.setCapacities(caps, true);
+      telegram.storage.set(CAPS_KEY, JSON.stringify(caps));
+      telegram.haptic('success');
+      updateWeak();
+    },
+  },
+});
+weak.setCapacities(state.caps, false);
+telegram.storage.get(CAPS_KEY).then((raw) => {
+  try {
+    const saved = raw ? JSON.parse(raw) : null;
+    if (!saved) return;
+    state.caps = { ...TYPICAL, ...saved };
+    state.ownCaps = true;
+    weak.setCapacities(state.caps, true);
+  } catch {
+    // A corrupt value just means typical maximums.
+  }
 });
 
 function selectExercise(id) {
@@ -100,13 +148,48 @@ function selectExercise(id) {
   state.u = 0;
   state.phase = -1;
   ui.setExercise(ex, index);
-  overlays.configure(ex);
+  state.variant = ex.variants[0];
+  ui.setVariants(ex.variants, state.variant.id);
+  overlays.configure(ex, state.variant);
+  weak.setForce(state.forceKg, state.variant.resist.kind === 'cable');
   view.setShift(ex.cameraShift);
   view.go(ex.camera, !view.view);
   ui.setView(ex.camera);
   setPlaying(true);
   telegram.haptic('select');
   requestAnimationFrame(layout); // the error card's height may have changed
+}
+
+function selectVariant(id) {
+  state.variant = variantOf(state.exercise, id);
+  ui.setVariant(state.variant.id);
+  overlays.configure(state.exercise, state.variant);
+  weak.setForce(state.forceKg, state.variant.resist.kind === 'cable');
+  updateWeak();
+  telegram.haptic('select');
+}
+
+/** Only one sheet over the controls at a time; Telegram's back button closes it. */
+function setWeak(open) {
+  if (open) {
+    selectMuscle(null);
+    weak.show();
+    updateWeak();
+    telegram.backButton(true, () => setWeak(false));
+    telegram.haptic('light');
+  } else {
+    weak.hide();
+    telegram.backButton(false);
+  }
+}
+
+function updateWeak() {
+  if (!weak.open) return;
+  const ex = state.exercise;
+  const demands = jointDemands(probe, poseAt(ex, state.u).rad, state.variant.resist, state.forceKg * G, state.caps);
+  const phase = ex.phases[phaseAt(ex, state.u)].name;
+  const against = ex.variants.length > 1 ? ` · ${state.variant.label.toLowerCase()}` : '';
+  weak.render(`${ex.title}${against} · ${phase}`, demands);
 }
 
 function setPlaying(playing) {
@@ -134,6 +217,7 @@ function selectMuscle(id) {
   state.selected = id;
   muscles.select(id);
   if (id) {
+    if (weak.open) weak.hide();
     ui.openMuscle(infoById.get(id));
     ui.setMuscleLoad(state.acts[id] ?? 0);
     telegram.backButton(true, () => selectMuscle(null));
@@ -185,7 +269,10 @@ window.addEventListener('keydown', (e) => {
   if (e.code === 'Space') {
     e.preventDefault();
     setPlaying(!state.playing);
-  } else if (e.code === 'Escape') selectMuscle(null);
+  } else if (e.code === 'Escape') {
+    selectMuscle(null);
+    setWeak(false);
+  }
 });
 
 // ── layout ─────────────────────────────────────────────────────────────────
@@ -200,12 +287,13 @@ function layout() {
   const covers = ui.covers();
   view.resize(width, height, covers.top, covers.bottom);
   const root = document.documentElement.style;
-  root.setProperty('--now-top', `${Math.round(covers.top + 2)}px`);
+  root.setProperty('--now-top', `${Math.round(covers.header + 2)}px`);
   root.setProperty('--sheet-h', `${Math.round(covers.bottom)}px`);
 }
 
 new ResizeObserver(layout).observe(document.getElementById('app'));
 new ResizeObserver(layout).observe(ui.el.sheet);
+new ResizeObserver(layout).observe(document.getElementById('now'));
 
 // ── loop ───────────────────────────────────────────────────────────────────
 
@@ -222,7 +310,7 @@ function frame(now) {
 
   const { deg, rad } = poseAt(ex, state.u);
   rig.update(rad);
-  state.acts = activationsAt(ex, state.u);
+  state.acts = activationsAt(ex, state.u, { variant: state.variant, leverage: LEVERAGE });
   muscles.update(state.acts);
 
   const danger = state.mode === 'error' && Boolean(ex.error.danger);
@@ -261,6 +349,7 @@ function frame(now) {
       .map(([id, value]) => ({ id, value, name: infoById.get(id).short }));
     ui.setNow(top, selectMuscle);
     if (state.selected) ui.setMuscleLoad(state.acts[state.selected] ?? 0);
+    updateWeak();
   }
 
   renderer.render(scene, view.camera);
@@ -269,7 +358,7 @@ function frame(now) {
 
 // `?debug` exposes the internals in the console.
 if (new URLSearchParams(location.search).has('debug')) {
-  window.armlab = { THREE, rig, ghost, muscles, view, state, renderer, scene };
+  window.armlab = { THREE, rig, ghost, probe, muscles, view, state, renderer, scene };
 }
 
 layout();
