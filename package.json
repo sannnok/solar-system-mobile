@@ -8,7 +8,8 @@
     "start": "node scripts/dev-server.mjs",
     "dev": "node scripts/dev-server.mjs",
     "mobile": "node scripts/dev-server.mjs --host",
-    "build:armlab": "node scripts/build-armlab.mjs"
+    "build:armlab": "node scripts/build-armlab.mjs",
+    "check:armlab": "node scripts/check-armlab.mjs"
   },
   "keywords": [
     "three.js",

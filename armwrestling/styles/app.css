@@ -235,7 +235,7 @@ button {
   top: var(--now-top, 120px);
   width: min(40vw, 152px);
   margin: 0;
-  padding: 6px 9px 7px;
+  padding: 5px 6px 6px;
   border-radius: 12px;
   background: rgba(10, 15, 24, 0.6);
   border: 1px solid var(--line);
@@ -244,7 +244,7 @@ button {
 }
 
 .now__title {
-  margin: 0 0 4px;
+  margin: 0 3px 3px;
   font-size: 11px;
   color: var(--muted);
   text-transform: uppercase;
@@ -256,17 +256,20 @@ button {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 3px;
+  gap: 2px;
 }
 
+/* The row itself is the load bar: filled up to --v. */
 .now__item {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 1px 6px;
-  padding: 2px 0;
+  gap: 6px;
+  padding: 1px 4px;
+  border-radius: 4px;
   font-size: 12px;
-  line-height: 1.25;
+  line-height: 1.3;
   cursor: pointer;
+  background: linear-gradient(90deg, rgba(242, 154, 46, 0.3) var(--v, 0%), rgba(255, 255, 255, 0.04) var(--v, 0%));
 }
 
 .now__name {
@@ -278,22 +281,6 @@ button {
 .now__pct {
   font-variant-numeric: tabular-nums;
   color: var(--muted);
-}
-
-.now__bar {
-  grid-column: 1 / -1;
-  height: 2px;
-  border-radius: 1px;
-  background: rgba(255, 255, 255, 0.08);
-  overflow: hidden;
-}
-
-.now__bar i {
-  display: block;
-  height: 100%;
-  width: var(--v, 0%);
-  background: linear-gradient(90deg, var(--cold), var(--warm) 50%, var(--hot));
-  background-size: 210px 100%;
 }
 
 .legend {

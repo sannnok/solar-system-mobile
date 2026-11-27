@@ -121,7 +121,7 @@ export const EXERCISES = [
       delt: 0.15, deltMid: 0.1, pec: 0.2, lat: 0.15, ed: 0.15, ecu: 0.15,
     },
     cable: { attach: 'radialEnd', anchor: [2.4, 3.4, -1.8] },
-    force: { kind: 'arc', frame: 'forearm', at: [0.05, 1.75, 0.05], axis: [0, 1, 0], sign: 1, radius: 0.78 },
+    force: { kind: 'arc', about: 'pronation', height: 1.75, sign: 1, radius: 0.78 },
     phases: phases([
       { name: 'Старт', cue: 'Ладонь развёрнута к себе, ремень натянут' },
       { name: 'Вращение', cue: 'Крути предплечье, кисть держи подкрученной и на лучевой' },
@@ -167,33 +167,50 @@ export const EXERCISES = [
     },
   },
   {
+    // Table hook against a cable from the opponent's side. The cable does what
+    // an opponent does to a hook: pulls the hand away and outwards, opening the
+    // wrist and the elbow and turning the forearm into pronation. So everything
+    // that holds a hook works: biceps and brachialis keep the elbow closed,
+    // biceps and supinator keep the palm turned in, the wrist flexors keep the
+    // cup, pec, lat and front delt pull towards yourself and towards the pad.
     id: 'hook',
     chip: 'Крюк',
-    title: 'Супинация (крюк)',
-    duration: 4.4,
+    title: 'Крюк на блоке',
+    duration: 4.6,
     camera: 'side',
-    from: { pron: 10, flex: 18 },
-    to: { pron: -40, flex: 30, elbow: 10 },
-    readout: (p) => signed(-p.pron, 'Супинация', 'Пронация'),
+    from: { pron: 5, flex: 2, elbow: -8, ir: -6 },
+    to: { pron: -35, flex: 32, elbow: 12, ir: 10, dev: 4 },
+    readout: (p) => `${signed(-p.pron, 'Супинация', 'Пронация')} · сгиб ${Math.round(p.flex)}°`,
     weights: {
-      biceps: 1, supinator: 0.9, brachialis: 0.65, brachioradialis: 0.5, fcu: 0.6, fds: 0.7, fcr: 0.45,
-      pronatorTeres: 0.1, pronatorQuadratus: 0.1, ecrl: 0.2, ecrb: 0.15, apl: 0.1, ed: 0.1, ecu: 0.15,
-      triceps: 0.15, delt: 0.25, deltMid: 0.15, pec: 0.3, lat: 0.3,
+      biceps: 1, brachialis: 0.85, supinator: 0.65, brachioradialis: 0.55, fcu: 0.75, fds: 0.85, fcr: 0.55,
+      pec: 0.8, lat: 0.75, delt: 0.5, deltMid: 0.2, triceps: 0.15, pronatorTeres: 0.08,
+      // The cable also tips the hand towards the little finger; the radial side holds it up.
+      pronatorQuadratus: 0.08, ecrl: 0.45, ecrb: 0.3, ecu: 0.2, ed: 0.12, apl: 0.25,
     },
-    cable: { attach: 'radialEnd', anchor: [-2.8, 3.4, -1.2] },
-    force: { kind: 'arc', frame: 'forearm', at: [0.05, 1.75, 0.05], axis: [0, 1, 0], sign: -1, radius: 0.78 },
+    // Pulley on a post at the far end of the table, a little outside; the cable
+    // takes the little-finger end of the handle. Checked by virtual work: it
+    // resists supination, cupping, closing the elbow and side pressure alike.
+    // Elbow and shoulder still carry the most (the forearm is a 26 cm lever,
+    // the handle sits 6 cm off the rotation axis) — that is the hook.
+    cable: { attach: 'ulnarEnd', anchor: [1.4, 2.5, 5.2] },
+    forces: [
+      // The hook's main vector: towards yourself and towards the pad.
+      { kind: 'linear', frame: 'hand', at: 'center', dir: [-0.45, 0.05, -1], world: true },
+      // Keeping the palm turned in against the cable's pronating pull.
+      { kind: 'arc', about: 'pronation', height: 1.6, sign: -1, radius: 0.72 },
+    ],
     phases: phases([
-      { name: 'Старт', cue: 'Предплечье слегка пронировано, кисть подкручена' },
-      { name: 'Супинация', cue: 'Крути ладонь к себе, локоть закрывай' },
-      { name: 'Пик', cue: 'Кисть у себя, угол в локте острый' },
-      { name: 'Негатив', cue: 'Медленно отдавай, кисть не разгибай' },
-      { name: 'Пауза', cue: 'Капинг сохраняется всю амплитуду' },
+      { name: 'Старт', cue: 'Трос тянет к сопернику: кисть выпрямлена, локоть приоткрыт' },
+      { name: 'Крюк', cue: 'Подкручивай кисть, ладонь к себе, тяни на себя и к подушке' },
+      { name: 'Пик', cue: 'Кисть подкручена, угол в локте острый. Задержка' },
+      { name: 'Негатив', cue: 'Отдавай медленно: капинг и угол в локте не теряй' },
+      { name: 'Пауза', cue: 'Плечо держи за рукой' },
     ]),
     error: {
       title: 'Крюк без капинга',
-      text: 'Кисть разогнута: бицепс крутит, но запястье открыто — соперник легко выпрямляет его и уходит в верх.',
+      text: 'Ладонь развёрнута к себе, но кисть разогнута: трос, как и соперник, держит её за пальцы и раскрывает. Бицепс работает, а рычага нет — соперник выпрямляет тебе запястье и уходит в верх.',
       risk: 'Перегруз сухожилия бицепса и связок запястья',
-      to: { pron: -40, flex: -18, elbow: -6 },
+      to: { pron: -35, flex: -14, elbow: 2, ir: 2 },
     },
   },
   {

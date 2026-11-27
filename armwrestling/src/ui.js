@@ -149,7 +149,7 @@ export function createUI({ exercises, views, layers, on }) {
           ...items.map((item) => {
             const li = document.createElement('li');
             li.className = 'now__item';
-            li.innerHTML = '<span class="now__name"></span><span class="now__pct"></span><span class="now__bar"><i></i></span>';
+            li.innerHTML = '<span class="now__name"></span><span class="now__pct"></span>';
             li.querySelector('.now__name').textContent = item.name;
             li.addEventListener('click', () => onPick(item.id));
             return li;
@@ -159,7 +159,7 @@ export function createUI({ exercises, views, layers, on }) {
       [...el.nowList.children].forEach((li, i) => {
         const pct = Math.round(items[i].value * 100);
         li.querySelector('.now__pct').textContent = `${pct}%`;
-        li.querySelector('i').style.setProperty('--v', `${pct}%`);
+        li.style.setProperty('--v', `${pct}%`);
       });
     },
 

@@ -49,7 +49,7 @@ export class CameraRig {
     this.camera.setViewOffset(width, height, 0, shift, width, height);
     // Distances in VIEWS frame the arm in a full-height view; scale them so it
     // fits the free band vertically and the canvas horizontally.
-    this.fit = Math.max(height / free, 0.85 / this.camera.aspect) * 0.9;
+    this.fit = Math.max(height / free, 0.85 / this.camera.aspect) * 0.98;
     this.camera.updateProjectionMatrix();
     if (this.view && !this.tween && !this.userMoved) this.go(this.view.id, true);
   }

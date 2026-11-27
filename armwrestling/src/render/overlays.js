@@ -6,7 +6,7 @@
  */
 
 import * as THREE from 'three';
-import { HANDLE } from './rig.js';
+import { HANDLE, PRON_AXIS, RADIAL_HEAD } from './rig.js';
 import { placeBetween, v3 } from './shapes.js';
 
 const FORCE = 0x3cf2c0;
@@ -54,10 +54,11 @@ export class Overlays {
     this.group = new THREE.Group();
     scene.add(this.group);
 
-    this.force = makeArrow(FORCE);
     this.resist = makeArrow(RESIST);
-    this.group.add(this.force, this.resist);
+    this.group.add(this.resist);
+    this.linears = []; // pool of athlete-force arrows
     this.arcs = new Map();
+    this.active = []; // [{ def, arrow }] for the current exercise
 
     const cableMat = new THREE.MeshStandardMaterial({ color: 0x9aa6b4, metalness: 0.6, roughness: 0.4 });
     this.cable = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1, 8).translate(0, 0.5, 0), cableMat);
@@ -78,28 +79,21 @@ export class Overlays {
 
   configure(exercise) {
     this.exercise = exercise;
-    const f = exercise.force;
-    for (const arc of this.arcs.values()) arc.visible = false;
-    this.force.visible = f.kind === 'linear' && this.visible;
+    for (const arrow of [...this.linears, ...this.arcs.values()]) arrow.visible = false;
 
-    if (f.kind === 'arc') {
-      const key = `${f.frame}:${f.radius}`;
-      if (!this.arcs.has(key)) {
-        const arc = makeArcArrow(FORCE, f.radius);
-        this.rig[f.frame].add(arc);
-        this.arcs.set(key, arc);
+    // An exercise has one athlete force (`force`) or several (`forces`).
+    let linear = 0;
+    this.active = [].concat(exercise.forces ?? exercise.force).map((def) => {
+      if (def.kind === 'linear') {
+        if (!this.linears[linear]) {
+          this.linears[linear] = makeArrow(FORCE);
+          this.group.add(this.linears[linear]);
+        }
+        return { def, arrow: this.linears[linear++] };
       }
-      const arc = this.arcs.get(key);
-      arc.position.set(...f.at);
-      // Point the arc's +Z along the axis it turns about (flipped for negative turns).
-      const axis = v3(...f.axis).multiplyScalar(f.sign);
-      arc.quaternion.setFromUnitVectors(v3(0, 0, 1), axis);
-      arc.userData.spin.rotation.z = f.start ?? 0;
-      arc.visible = this.visible;
-      this.arc = arc;
-    } else {
-      this.arc = null;
-    }
+      return { def, arrow: this.#arc(def) };
+    });
+    for (const { arrow } of this.active) arrow.visible = this.visible;
 
     // Anchors are in rig space; the rig root may be mirrored.
     const anchor = this.rig.root.localToWorld(v3(...exercise.cable.anchor));
@@ -110,11 +104,38 @@ export class Overlays {
     this.post.scale.set(1, Math.max(anchor.y - 0.18, 0.01), 1);
   }
 
+  /**
+   * A rotation arrow lives in the frame it turns in. `about: 'pronation'`
+   * turns it about the real forearm rotation axis (radial head → ulnar head)
+   * at the given height, rather than the forearm's long axis.
+   */
+  #arc(def) {
+    const frame = def.about === 'pronation' ? 'forearm' : def.frame;
+    const key = `${frame}:${def.radius}`;
+    if (!this.arcs.has(key)) {
+      const arc = makeArcArrow(FORCE, def.radius);
+      this.rig[frame].add(arc);
+      this.arcs.set(key, arc);
+    }
+    const arc = this.arcs.get(key);
+    let axis;
+    if (def.about === 'pronation') {
+      axis = PRON_AXIS.clone();
+      arc.position.copy(RADIAL_HEAD).addScaledVector(PRON_AXIS, (def.height - RADIAL_HEAD.y) / PRON_AXIS.y);
+    } else {
+      axis = v3(...def.axis).normalize();
+      arc.position.set(...def.at);
+    }
+    // Point the arc's +Z along the axis it turns about (flipped for negative turns).
+    arc.quaternion.setFromUnitVectors(v3(0, 0, 1), axis.multiplyScalar(def.sign));
+    arc.userData.spin.rotation.z = def.start ?? 0;
+    return arc;
+  }
+
   setVisible(visible) {
     this.visible = visible;
     this.resist.visible = visible;
-    this.force.visible = visible && this.exercise?.force.kind === 'linear';
-    if (this.arc) this.arc.visible = visible;
+    for (const { arrow } of this.active) arrow.visible = visible;
   }
 
   update({ pose, effort, camera, width, height, ghost, danger }) {
@@ -133,19 +154,20 @@ export class Overlays {
     this.resist.userData.setLength(0.5 + 0.5 * effort);
     this.resist.userData.material.opacity = 0.55;
 
-    const f = ex.force;
-    if (f.kind === 'linear') {
-      rig.hand.localToWorld(a.copy(HANDLE[f.at]));
-      d.set(...f.dir);
-      d.transformDirection((f.world ? rig.root : rig.hand).matrixWorld);
-      this.force.position.copy(a);
-      this.force.quaternion.setFromUnitVectors(v3(0, 1, 0), d);
-      this.force.userData.setLength(0.55 + 0.6 * effort);
-      this.force.userData.material.opacity = strength;
-    } else if (this.arc) {
-      this.arc.userData.material.opacity = strength;
-      const s = 0.9 + 0.15 * effort;
-      this.arc.scale.set(s, s, s);
+    for (const { def: f, arrow } of this.active) {
+      if (f.kind === 'linear') {
+        rig.hand.localToWorld(a.copy(HANDLE[f.at]));
+        d.set(...f.dir);
+        // `world` directions are given in rig space, so they go through the (mirrored) root.
+        d.transformDirection((f.world ? rig.root : rig.hand).matrixWorld);
+        arrow.position.copy(a);
+        arrow.quaternion.setFromUnitVectors(v3(0, 1, 0), d);
+        arrow.userData.setLength(0.55 + 0.6 * effort);
+      } else {
+        const k = 0.9 + 0.15 * effort;
+        arrow.scale.set(k, k, k);
+      }
+      arrow.userData.material.opacity = strength;
     }
 
     // Readouts.
