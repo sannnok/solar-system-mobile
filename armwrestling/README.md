@@ -35,6 +35,11 @@ npm run mobile       # то же в локальной сети, с QR-кодо�
 
 Telegram открывает Mini App только по **HTTPS**, поэтому нужен публичный адрес:
 
+- **Render** (основной вариант): **https://armlab.onrender.com/armwrestling/**.
+  Это статический сайт `armlab`, его настройки описаны в `render.yaml` в корне
+  репозитория. Сборка `npm run build:armlab` копирует в `dist/` только
+  `armwrestling/` и `vendor/three`, так что остальной репозиторий не
+  публикуется. Каждый пуш в ветку сервиса запускает новый деплой.
 - **GitHub Pages.** Workflow репозитория публикует ветку по умолчанию. После
   слияния эта страница будет доступна по адресу
   `https://sannnok.github.io/solar-system-mobile/armwrestling/`.
