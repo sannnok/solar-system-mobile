@@ -105,37 +105,89 @@ for (const ex of EXERCISES) {
 }
 
 // ── the match: invariants of the two-arm statics (armwrestling/src/data/match.js) ──
-const { MatchSolver, TECHNIQUES } = await import('../armwrestling/src/data/match.js');
+const { MatchSolver, TECHNIQUES, DEFAULT_GRIP, naturalRotation } = await import('../armwrestling/src/data/match.js');
 const { TYPICAL } = await import('../armwrestling/src/data/strength.js');
 const solver = new MatchSolver();
-const match = (me, opp, extra = {}) =>
-  solver.solve({ me, opp, grip: 'medium', height: 'even', capsMe: TYPICAL, capsOpp: TYPICAL, ...extra });
+// A trained arm: wrists, forearm and elbow two to two and a half times typical, a 55 kg grip.
+const STRONG = {
+  ...TYPICAL,
+  wristFlex: 30,
+  wristExt: 20,
+  radialDev: 25,
+  ulnarDev: 25,
+  pronation: 20,
+  supination: 22,
+  elbowFlex: 120,
+  elbowExt: 80,
+  shoulderIR: 100,
+  shoulderER: 60,
+  grip: 55,
+};
+const match = (me, opp, grip = {}, caps = TYPICAL) =>
+  solver.solve({ me, opp, grip: { ...DEFAULT_GRIP, rotation: naturalRotation(me, opp), ...grip }, capsMe: caps, capsOpp: caps });
 const expect = (ok, text, detail) => {
   if (!ok) failures++;
   console.log(`  ${ok ? '✓' : '✗'} ${text}${detail ? ` — ${detail}` : ''}`);
 };
-const rotation = (r) => r.me.find((d) => d.joint === 'pron').share;
+const pct = (x) => `${Math.round(x * 100)}%`;
+const share = (list, joint) => list.find((d) => d.joint === joint)?.share ?? 0;
 console.log('\nСхватка');
 for (const t of TECHNIQUES) {
-  const r = match(t.id, t.id);
-  expect(Math.abs(r.margin) < 0.02, `${t.label}, зеркальная схватка — ничья`, `перевес ${(r.margin * 100).toFixed(1)}%`);
+  const worst = Math.max(...[0.1, 0.5, 0.9].map((depth) => Math.abs(match(t.id, t.id, { depth }).margin)));
+  expect(worst < 0.02, `${t.label}, зеркальная схватка — ничья при любой глубине`, `перевес до ${(worst * 100).toFixed(1)}%`);
 }
 for (const a of TECHNIQUES) {
   for (const b of TECHNIQUES) {
     if (a.id >= b.id) continue;
-    const ab = match(a.id, b.id);
-    const ba = match(b.id, a.id);
+    const ab = match(a.id, b.id, { height: 1 });
+    const ba = match(b.id, a.id, { height: -1 });
     expect(Math.abs((1 + ab.margin) * (1 + ba.margin) - 1) < 0.02, `${a.label} / ${b.label}: исход симметричен при обмене сторонами`);
-    expect(ab.mismatch < 0.05, `${a.label} / ${b.label}: кисти сходятся`, `зазор ${(ab.mismatch * 10).toFixed(2)} см`);
+    expect(
+      ab.mismatch < 0.05 && ab.facing > 0.99,
+      `${a.label} / ${b.label}: замок сходится`,
+      `зазор ${(ab.mismatch * 10).toFixed(2)} см, ладони напротив на ${(ab.facing * 100).toFixed(1)}%`,
+    );
   }
 }
-const hh = rotation(match('hook', 'hook'));
-const ht = rotation(match('hook', 'top'));
-expect(hh < 0.1, 'Крюк против крюка: за вращение не борются', `ротация предплечья ${Math.round(hh * 100)}%`);
-expect(ht > 0.15, 'Крюк против верха: супинация против пронации', `ротация предплечья ${Math.round(ht * 100)}%`);
-const high = match('top', 'top', { height: 'me' }).margin;
-const low = match('top', 'top', { height: 'opp' }).margin;
-expect(high > 0.1 && low < -0.1, 'Чья кисть выше, тот в выигрыше', `выше ты ${Math.round(high * 100)}%, выше соперник ${Math.round(low * 100)}%`);
+const hh = share(match('hook', 'hook').me, 'pron');
+const ht = share(match('hook', 'top').me, 'pron');
+// Two hooks twist the same way, so their supination mostly cancels; what is left comes from
+// the forearms leaning towards each other, so the two rotation axes are not quite parallel.
+expect(hh < 0.15 && ht > 2 * hh, 'Крюк против крюка за вращение почти не борются, крюк против верха — борются', `ротация предплечья ${pct(hh)} против ${pct(ht)}`);
+const high = match('top', 'top', { height: 1.5 }).margin;
+const low = match('top', 'top', { height: -1.5 }).margin;
+expect(high > 0.1 && low < -0.1, 'Чья кисть выше, тот в выигрыше', `выше ты ${pct(high)}, выше соперник ${pct(low)}`);
+const shallow = match('top', 'top', { depth: 0.1, height: 2 }, STRONG);
+const deep = match('top', 'top', { depth: 0.9, height: 2 }, STRONG);
+expect(
+  shallow.opp[0].joint === 'grip',
+  'Мелкий хват, сильные руки: у нижней кисти раскрывается хват',
+  `первым сдаётся «${shallow.opp[0].action.name.toLowerCase()}»`,
+);
+expect(
+  share(deep.opp, 'grip') < share(shallow.opp, 'grip') && deep.opp[0].joint !== 'grip',
+  'Глубокий хват держит пальцы нижней кисти',
+  `хват ${pct(share(shallow.opp, 'grip'))} на мелком → ${pct(share(deep.opp, 'grip'))} на глубоком`,
+);
+const strapped = match('top', 'top', { depth: 0.1, height: 2, straps: true }, STRONG);
+expect(!strapped.opp.some((d) => d.joint === 'grip'), 'Ремни снимают нагрузку с пальцев');
+let worstGap = 0;
+for (const a of TECHNIQUES) {
+  for (const b of TECHNIQUES) {
+    const r = match(a.id, b.id);
+    const { frames } = solver.breakdown(r);
+    const last = frames.at(-1);
+    solver.me.rig.update(last.me);
+    const pa = solver.me.rig.hand.localToWorld(r.at.me.clone());
+    solver.opp.rig.update(last.opp);
+    worstGap = Math.max(worstGap, pa.distanceTo(solver.opp.rig.hand.localToWorld(r.at.opp.clone())));
+  }
+}
+expect(worstGap < 0.1, 'Срыв: руки остаются в замке, пока ломается сустав', `зазор до ${(worstGap * 10).toFixed(1)} см`);
+const slip = solver.breakdown(shallow);
+solver.me.rig.update(slip.frames.at(-1).me);
+const out = solver.me.rig.hand.localToWorld(shallow.at.me.clone()).distanceTo(shallow.contact);
+expect(slip.link.joint === 'grip' && out > 0.5, 'Срыв хвата: кисть победителя выходит из захвата', `на ${(out * 10).toFixed(0)} см`);
 
 console.log(failures ? `\n${failures} нарушений` : '\nВсе сопротивления мешают движению, все векторы усилия ведут его.');
 console.log(warnings ? `${warnings} предупреждений: удерживающие мышцы недогружены.` : 'Удерживающие мышцы нагружены везде, где их нагружает сопротивление.');

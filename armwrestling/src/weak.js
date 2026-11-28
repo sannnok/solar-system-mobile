@@ -35,8 +35,9 @@ export function createWeakPanel({ actions, typical, on }) {
     actions.map((a) => {
       const label = document.createElement('label');
       label.className = 'weak__field';
-      label.innerHTML = '<span></span><input type="number" inputmode="decimal" min="1" max="500" step="0.5" /><small>Н·м</small>';
-      label.querySelector('span').textContent = a.name;
+      label.innerHTML = '<span></span><input type="number" inputmode="decimal" min="1" max="500" step="0.5" /><small></small>';
+      label.querySelector('span').textContent = a.field ?? a.name;
+      label.querySelector('small').textContent = a.unit ?? 'Н·м';
       el.fields.append(label);
       return [a.id, label.querySelector('input')];
     }),

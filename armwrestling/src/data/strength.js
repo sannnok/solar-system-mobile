@@ -20,6 +20,18 @@ export const ACTIONS = [
   { id: 'wristExt', joint: 'flex', sign: -1, name: 'Разгибание кисти', typical: 8 },
   { id: 'radialDev', joint: 'dev', sign: 1, name: 'Подъём на лучевую', typical: 10 },
   { id: 'ulnarDev', joint: 'dev', sign: -1, name: 'Отведение к мизинцу', typical: 12 },
+  // Not a joint torque: the fingers holding the other hand in a match. Entered as a
+  // hand-dynamometer reading, the one number most athletes know.
+  {
+    id: 'grip',
+    joint: 'grip',
+    sign: 1,
+    name: 'Хват пальцев',
+    field: 'Хват, кистевой динамометр',
+    unit: 'кг',
+    failure: 'раскрывается хват',
+    typical: 45,
+  },
 ];
 
 export const TYPICAL = Object.fromEntries(ACTIONS.map((a) => [a.id, a.typical]));
@@ -39,4 +51,5 @@ export const ACTION_MUSCLES = {
   wristExt: { ecrl: 1, ecrb: 1, ecu: 1, ed: 0.6 },
   radialDev: { ecrl: 1, apl: 1, ecrb: 0.8, fcr: 0.8 },
   ulnarDev: { fcu: 1, ecu: 1 },
+  grip: { fdp: 1, fds: 1, fcu: 0.25, fcr: 0.25 },
 };

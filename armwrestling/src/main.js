@@ -15,13 +15,14 @@ import { EXERCISES, activationsAt, effort, phaseAt, poseAt, variantOf } from './
 import { jointDemands } from './data/mechanics.js';
 import { ACTIONS, TYPICAL } from './data/strength.js';
 import {
-  GRIPS,
-  HEIGHTS,
+  DEFAULT_GRIP,
+  GRIP_PARAMS,
   MatchSolver,
   PAD_DISTANCE,
   PROFILES,
   TECHNIQUES,
   activationsFromDemands,
+  naturalRotation,
   profileCaps,
 } from './data/match.js';
 import { createMatchPanel } from './matchPanel.js';
@@ -118,7 +119,16 @@ const state = {
   forceKg: 15,
   caps: { ...TYPICAL },
   ownCaps: false,
-  match: { on: false, me: 'hook', opp: 'top', grip: 'medium', height: 'even', profile: 'same', result: null },
+  match: {
+    on: false,
+    me: 'hook',
+    opp: 'top',
+    profile: 'same',
+    grip: { ...DEFAULT_GRIP, rotation: naturalRotation('hook', 'top') },
+    result: null,
+    oppActs: {},
+    anim: null,
+  },
 };
 
 const ui = createUI({
@@ -165,7 +175,7 @@ const weak = createWeakPanel({
       telegram.storage.set(CAPS_KEY, JSON.stringify(caps));
       telegram.haptic('success');
       updateWeak();
-      if (state.match.on) solveMatch();
+      if (state.match.on) solveMatch(true);
     },
   },
 });
@@ -177,26 +187,43 @@ telegram.storage.get(CAPS_KEY).then((raw) => {
     state.caps = { ...TYPICAL, ...saved };
     state.ownCaps = true;
     weak.setCapacities(state.caps, true);
-    if (state.match.on) solveMatch();
+    if (state.match.on) solveMatch(true);
   } catch {
     // A corrupt value just means typical maximums.
   }
 });
 
+let gripHaptic = 0;
 const matchPanel = createMatchPanel({
   techniques: TECHNIQUES,
-  grips: GRIPS,
-  heights: HEIGHTS,
   profiles: PROFILES,
+  params: GRIP_PARAMS,
   initial: state.match,
   on: {
     change(patch) {
-      Object.assign(state.match, patch);
-      solveMatch();
+      const m = state.match;
+      Object.assign(m, patch);
+      // New techniques settle the lock's rotation afresh, halfway between them.
+      if (patch.me || patch.opp) m.grip.rotation = naturalRotation(m.me, m.opp);
+      matchPanel.setGrip(m.grip);
+      solveMatch(true);
       telegram.haptic('select');
     },
+    grip(patch, final) {
+      Object.assign(state.match.grip, patch);
+      matchPanel.setGrip(state.match.grip);
+      solveMatch(final);
+      const now = performance.now();
+      if (final || now - gripHaptic > 120) {
+        gripHaptic = now;
+        telegram.haptic('select');
+      }
+    },
+    play: playBreak,
+    tab: () => requestAnimationFrame(layout),
   },
 });
+matchPanel.setGrip(state.match.grip);
 
 /** The match: both arms locked in a grip, solved by statics (data/match.js). */
 function enterMatch() {
@@ -211,7 +238,7 @@ function enterMatch() {
   rig.setLayer('gear', false);
   oppRig.setLayer('gear', false);
   document.getElementById('now').hidden = true; // the sheet lists both athletes' links instead
-  solveMatch();
+  solveMatch(true);
   // Aim at the grip, a little below it so both elbows stay in frame.
   const c = state.match.result.contact;
   view.setShift([c.x, c.y - 0.7 - 2.35, c.z + 0.2], 1.3);
@@ -223,6 +250,7 @@ function enterMatch() {
 
 function leaveMatch() {
   if (!state.match.on) return;
+  stopBreak();
   state.match.on = false;
   document.getElementById('now').hidden = false;
   ui.setMatchMode(false);
@@ -235,26 +263,100 @@ function leaveMatch() {
   ui.setMode(state.mode);
 }
 
-function solveMatch() {
+const matchSettings = () => {
   const m = state.match;
-  const result = solver.solve({
-    me: m.me,
-    opp: m.opp,
-    grip: m.grip,
-    height: m.height,
-    capsMe: state.caps,
-    capsOpp: profileCaps(m.profile, state.caps),
-  });
+  return { me: m.me, opp: m.opp, grip: { ...m.grip }, capsMe: state.caps, capsOpp: profileCaps(m.profile, state.caps) };
+};
+
+/** Solve the lock-up and show it; `sweeps` also redraws the grip curves (a few dozen solves). */
+function solveMatch(sweeps = false) {
+  const m = state.match;
+  stopBreak();
+  const result = solver.solve(matchSettings());
   m.result = result;
-  rig.update(result.poses.meRad);
+  showLock(result.poses.meRad, result.poses.oppRad, result);
+  state.acts = activationsFromDemands(result.me, result.poses.me, LEVERAGE);
+  m.oppActs = activationsFromDemands(result.opp, result.poses.opp, LEVERAGE);
+  muscles.update(state.acts);
+  oppMuscles.update(m.oppActs);
+  overlays.setMatch({ contact: result.contact.clone(), fMe: result.efforts.me.F, fOpp: result.efforts.opp.F, oppRig });
+  matchPanel.render(result);
+  if (sweeps) scheduleSweeps();
+}
+
+function showLock(poseMe, poseOpp, result) {
+  rig.update(poseMe);
   oppOuter.position.copy(result.offset);
   oppOuter.updateMatrixWorld(true);
-  oppRig.update(result.poses.oppRad);
-  state.acts = activationsFromDemands(result.me, result.poses.me, LEVERAGE);
-  muscles.update(state.acts);
-  oppMuscles.update(activationsFromDemands(result.opp, result.poses.opp, LEVERAGE));
-  overlays.setMatch({ contact: result.contact, fMe: result.efforts.me.F, fOpp: result.efforts.opp.F, oppRig });
-  matchPanel.render(result);
+  oppRig.update(poseOpp);
+}
+
+// The grip curves: one parameter per task, so a slider never waits on them.
+let sweepRun = 0;
+function scheduleSweeps() {
+  const run = ++sweepRun;
+  const settings = matchSettings();
+  const out = {};
+  const keys = GRIP_PARAMS.map((p) => p.key);
+  const next = () => {
+    if (run !== sweepRun || !state.match.on) return;
+    const key = keys.shift();
+    out[key] = solver.sweep(settings, key);
+    if (keys.length) setTimeout(next, 0);
+    else matchPanel.renderSweeps(out, settings.grip, state.match.result.margin);
+  };
+  setTimeout(next, 30);
+}
+
+/**
+ * How the lock-up breaks: the loser's link gives way and the winner drives
+ * through it (or the grip opens). Keyframes from MatchSolver.breakdown(),
+ * played by the frame loop, then back to the lock.
+ */
+const BREAK = { push: 1.5, hold: 0.8, back: 0.6 };
+function playBreak() {
+  const m = state.match;
+  if (!m.result || m.anim) return;
+  m.anim = { ...solver.breakdown(m.result), t: 0, buzzed: false };
+  matchPanel.setPlaying(true);
+  telegram.haptic('medium');
+}
+
+function stopBreak() {
+  if (!state.match.anim) return;
+  state.match.anim = null;
+  matchPanel.setPlaying(false);
+}
+
+const _grip = new THREE.Vector3();
+function stepBreak(dt) {
+  const m = state.match;
+  const a = m.anim;
+  a.t += dt;
+  const { push, hold, back } = BREAK;
+  let u;
+  if (a.t < push) {
+    const x = a.t / push;
+    u = x * x * (3 - 2 * x); // slow start, then it goes
+  } else if (a.t < push + hold) {
+    u = 1;
+    if (!a.buzzed) {
+      a.buzzed = true;
+      telegram.haptic(a.loser === 'me' ? 'error' : 'success');
+    }
+  } else if (a.t < push + hold + back) u = 1 - (a.t - push - hold) / back;
+  else {
+    showLock(m.result.poses.meRad, m.result.poses.oppRad, m.result);
+    overlays.match.contact.copy(m.result.contact);
+    stopBreak();
+    return;
+  }
+  const f = u * (a.frames.length - 1);
+  const i = Math.min(Math.floor(f), a.frames.length - 2);
+  const w = f - i;
+  const mix = (p, q) => Object.fromEntries(Object.keys(p).map((k) => [k, p[k] + (q[k] - p[k]) * w]));
+  showLock(mix(a.frames[i].me, a.frames[i + 1].me), mix(a.frames[i].opp, a.frames[i + 1].opp), m.result);
+  overlays.match.contact.copy(rig.hand.localToWorld(_grip.copy(m.result.at.me)));
 }
 
 function selectExercise(id) {
@@ -437,6 +539,10 @@ function frame(now) {
     rig.update(rad);
     state.acts = activationsAt(ex, state.u, { variant: state.variant, leverage: LEVERAGE });
     muscles.update(state.acts);
+  } else if (state.match.anim) {
+    stepBreak(dt);
+    muscles.update(state.acts);
+    oppMuscles.update(state.match.oppActs);
   }
 
   const danger = state.mode === 'error' && Boolean(ex.error.danger);
@@ -484,7 +590,7 @@ function frame(now) {
 
 // `?debug` exposes the internals in the console.
 if (new URLSearchParams(location.search).has('debug')) {
-  window.armlab = { THREE, rig, ghost, probe, oppRig, solver, muscles, oppMuscles, view, state, renderer, scene };
+  window.armlab = { THREE, rig, ghost, probe, oppRig, solver, muscles, oppMuscles, view, state, renderer, scene, playBreak };
 }
 
 layout();

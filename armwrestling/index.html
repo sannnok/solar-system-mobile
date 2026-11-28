@@ -73,17 +73,23 @@
           <div class="match__grid">
             <label class="pick"><span>Ты</span><select id="m-me"></select></label>
             <label class="pick"><span>Соперник</span><select id="m-opp"></select></label>
-            <label class="pick"><span>Хват</span><select id="m-grip"></select></label>
-            <label class="pick"><span>Чья кисть выше</span><select id="m-height"></select></label>
-            <label class="pick pick--wide"><span>Сила соперника</span><select id="m-profile"></select></label>
+            <label class="pick"><span>Сила соперника</span><select id="m-profile"></select></label>
           </div>
           <div class="match__result" aria-live="polite">
-            <p class="match__verdict" id="m-verdict"></p>
-            <p class="match__detail" id="m-detail"></p>
-            <div class="match__cols">
-              <div><p class="match__col">Ты</p><ol class="m-links" id="m-links-me"></ol></div>
-              <div><p class="match__col">Соперник</p><ol class="m-links" id="m-links-opp"></ol></div>
+            <div class="match__head">
+              <p class="match__verdict" id="m-verdict"></p>
+              <button class="chip match__play" id="m-play" type="button">▶ Срыв</button>
             </div>
+            <p class="match__detail" id="m-detail"></p>
+          </div>
+          <div class="seg seg--tabs" id="m-tabs" role="radiogroup" aria-label="Что показать">
+            <button type="button" role="radio" data-tab="grip" aria-checked="true">Хват</button>
+            <button type="button" role="radio" data-tab="links" aria-checked="false">Звенья</button>
+          </div>
+          <div class="grip" id="m-grip"></div>
+          <div class="match__cols" id="m-links" hidden>
+            <div><p class="match__col">Ты</p><ol class="m-links" id="m-links-me"></ol></div>
+            <div><p class="match__col">Соперник</p><ol class="m-links" id="m-links-opp"></ol></div>
           </div>
         </div>
 
@@ -155,7 +161,7 @@
         <button class="chip" id="weak-edit" type="button">Мои максимумы</button>
         <form class="weak__form" id="weak-form" hidden>
           <div class="weak__fields" id="weak-fields"></div>
-          <p class="weak__hint">Из теста на динамометре или с рукоятью: вес (кг) × 9,8 × плечо (м). Например, 6 кг на рукояти в 20 см от запястья — это 6 × 9,8 × 0,2 ≈ 12 Н·м.</p>
+          <p class="weak__hint">Из теста на динамометре или с рукоятью: вес (кг) × 9,8 × плечо (м). Например, 6 кг на рукояти в 20 см от запястья — это 6 × 9,8 × 0,2 ≈ 12 Н·м. Хват — просто показание кистевого динамометра в кг, он нужен для схватки.</p>
           <div class="weak__buttons">
             <button class="chip" id="weak-reset" type="button">Типичные</button>
             <button class="chip chip--accent" type="submit">Сохранить</button>
